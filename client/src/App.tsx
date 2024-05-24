@@ -7,6 +7,7 @@ import RegistrationPage from './components/RegistrationPage';
 import { ThemeProvider } from "./contexts/ThemeProvider"
 import { Toaster } from "@/components/ui/toaster"
 import HomePage from './views/HomePage';
+import LoginPage from './views/LoginPage';
 
 const App: React.FC = () => { 
   return (
@@ -16,9 +17,10 @@ const App: React.FC = () => {
                 <WordBankProvider>
                   <BrowserRouter>
                       <Toaster />
-                      <Navbar />
+                      {/* <Navbar /> */}
                         <Routes>
-                          <Route path="/" element={<HomePage />} />
+                          {/* <Route path="/" element={<HomePage />} /> */}
+                          <Route path="/" element={<LoginPage />} />
                           <Route path="/registrationPage" element={<RegistrationPage />} />
                         </Routes>
                   </BrowserRouter>
