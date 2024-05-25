@@ -16,6 +16,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
+import DropdownAvatar from '@/components/DropdownAvatar';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import ModeToggle from '@/components/ModeToggle';
+import { useLogo } from '@/components/Logo';
 
 const FormSchema = z.object({
   email: z.string().min(2, {
@@ -24,15 +29,26 @@ const FormSchema = z.object({
   password: z.string().min(2, {
     message: "Password must be at least 2 characters.",
   }),
-});
+})
 
 const LoginPage = () => {
   const { user, login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
   useEffect(() => {
+    const dropdownAvatar = document.getElementById('dropdownAvatar');
+    const loginButtonElem = document.getElementById('loginButton');
+  
+    if (isAuthenticated) {
+      if (dropdownAvatar) dropdownAvatar.style.display = 'block';
+      if (loginButtonElem) loginButtonElem.style.display = 'none';
+    } else {
+      if (dropdownAvatar) dropdownAvatar.style.display = 'none';
+      if (loginButtonElem) loginButtonElem.style.display = 'block';
+    }
     console.log('Updated isAuthenticated:', isAuthenticated);
     console.log('Updated user:', user);
   }, [isAuthenticated, user]);
@@ -48,6 +64,7 @@ const LoginPage = () => {
   const { toast } = useToast();
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     const { email, password } = data;
+    console.log('Logging in with:', email, password)
     if (email && password) {
       try { 
         await login({ email, password });
@@ -82,19 +99,22 @@ const LoginPage = () => {
 
   return (
     <div className="flex h-screen">
-      <div className="w-1/5 bg-gray-900 text-white flex flex-col items-center p-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">Logo</h1>
+      <div className="w-full sm:w-1/5 md:w-2/6 flex flex-col items-center p-8 relative">
+        <div className="flex flex-col items-center mb-6">
+          <h1 className="text-5xl font-bold">Somewhere</h1>
+          <p className="leading-7">AI-Powered Online Journal</p>
         </div>
-        <div className="mb-4">
-          <h2 className="text-xl">Log in to your account</h2>
+        <div className="mb-2">
+          <h1 className="text-2xl font-bold">Log in to your account</h1>
+          {/* <h2 className="scroll-m-20 text-xl font-extrabold tracking-tight lg:text-2xl">Log in to your account</h2> */}
         </div>
-        <div className="mb-4">
-          <p>
-            Don't have an account? <a href="#" className="text-green-500">Sign Up</a>
-          </p>
+        <div className='mb-4 flex items-center'>
+          <p className="mr-2">Don't have an account?</p>
+          <Link to="registrationPage" className='inline' onClick={handleDismissModal}>
+            <Button variant="link" className='text-primary text-md active:text-secondary p-0'>Sign Up</Button>
+          </Link>
         </div>
-        <div className="w-full">
+        <div className="w-full flex-1 flex flex-col justify-between">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
@@ -110,7 +130,10 @@ const LoginPage = () => {
                         autoComplete="email"
                         {...field}
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => {
+                          field.onChange(e)
+                          setEmail(e.target.value)
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -125,35 +148,51 @@ const LoginPage = () => {
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="p@$$w0Rd"
-                          autoComplete="new-password"
-                          {...field}
-                        />
+                        <div className="relative">
+                          <Input
+                            type={passwordVisible ? "text" : "password"}
+                            placeholder="p@$$w0Rd"
+                            autoComplete="new-password"
+                            {...field}
+                            className="pr-10"
+                          />
+                          <button
+                            type="button"
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                            onClick={() => setPasswordVisible(!passwordVisible)}
+                          >
+                            {passwordVisible ? (
+                              <FontAwesomeIcon icon={faEye} />
+                            ) : (
+                              <FontAwesomeIcon icon={faEyeSlash} />
+                            )}
+                          </button>
+                        </div>
                       </FormControl>
-                      <a href="#" className="text-green-500 mb-4">Forgot Password?</a>
+                      <Link to="registrationPage" className='flex justify-end' onClick={handleDismissModal}>
+                        <Button variant="link">Forgot Password?</Button>
+                      </Link>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               )}
               {showPassword ? (
-                <Button type="submit" className='w-full'>Login</Button>
+                <Button type="submit" className='w-1/4  rounded'>Login</Button>
               ) : (
-                <Button type="button" className='w-full bg-green-500 text-white rounded hover:bg-green-600' onClick={handleNextClick}>Next</Button>
+                <div className="flex justify-start">
+                  <Button type="button" className='w-1/4 rounded' onClick={handleNextClick}>Next</Button>
+                </div>
               )}
-              <div className='flex justify-center items-center w-full'>
-                <h1 className="">Not already a member? </h1>
-                <Link to="registrationPage" className='' onClick={handleDismissModal}>
-                  <Button variant="ghost" className='text-primary text-md active:text-secondary'>Register</Button>
-                </Link>
-              </div>
             </form>
           </Form>
+          <div className="bottom-8 w-full flex justify-between">
+            <ModeToggle />
+            <DropdownAvatar />
+          </div>
         </div>
       </div>
-      <div className="w-4/5 bg-green-700 flex justify-center items-center text-white">
+      <div className="hidden sm:flex md:flex w-4/5 bg-primary justify-center items-center text-white">
         <p>Put your animation or picture here.</p>
       </div>
     </div>
@@ -161,3 +200,4 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+
