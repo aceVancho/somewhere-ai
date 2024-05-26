@@ -24,3 +24,6 @@ server/config
 *.njsproj
 *.sln
 *.sw?
+
+docs
+
