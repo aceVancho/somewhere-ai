@@ -4,13 +4,11 @@ import { v4 as uuidv4 } from 'uuid';
 import * as csvWriter from 'csv-writer';
 import { parse } from 'date-fns';
 
-// Define the XML structure
 interface XmlPost {
   'wp:post_date': string[];
   'content:encoded': string[];
 }
 
-// Define the output structure
 interface JournalEntry {
   entry_id: string;
   entry_number: number;
@@ -19,14 +17,12 @@ interface JournalEntry {
   age: number;
 }
 
-// Calculate age based on birth date
 const calculateAge = (birthDate: Date, postDate: Date): number => {
   const ageDifMs = postDate.getTime() - birthDate.getTime();
   const ageDate = new Date(ageDifMs);
   return Math.abs(ageDate.getUTCFullYear() - 1970);
 };
 
-// Parse the XML file
 const parseXml = async (filePath: string): Promise<XmlPost[]> => {
   const parser = new xml2js.Parser();
   const data = fs.readFileSync(filePath, 'utf8');
@@ -34,9 +30,8 @@ const parseXml = async (filePath: string): Promise<XmlPost[]> => {
   return result.rss.channel[0].item;
 };
 
-// Convert XML posts to journal entries
 const convertToJournalEntries = (posts: XmlPost[]): JournalEntry[] => {
-  const birthDate = new Date(1989, 2, 23); // 3/23/1989
+  const birthDate = new Date(1989, 2, 23);
   return posts.map((post, index) => {
     const postDate = parse(post['wp:post_date'][0], 'yyyy-MM-dd HH:mm:ss', new Date());
     return {
@@ -49,7 +44,6 @@ const convertToJournalEntries = (posts: XmlPost[]): JournalEntry[] => {
   });
 };
 
-// Write journal entries to CSV
 const writeCsv = (entries: JournalEntry[], outputPath: string): void => {
   const csv = csvWriter.createObjectCsvWriter({
     path: outputPath,
@@ -64,7 +58,6 @@ const writeCsv = (entries: JournalEntry[], outputPath: string): void => {
   csv.writeRecords(entries).then(() => console.log('CSV file written successfully.'));
 };
 
-// Main function
 const main = async () => {
   const xmlFilePath = 'src/docs/entries.xml';
   const csvOutputPath = 'src/docs/entries.csv';
@@ -75,5 +68,4 @@ const main = async () => {
   writeCsv(journalEntries, csvOutputPath);
 };
 
-// Execute the main function
 main().catch(console.error);

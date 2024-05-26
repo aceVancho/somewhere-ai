@@ -12,20 +12,17 @@ interface JournalEntry {
   age: number;
 }
 
-// Paths
 const inputCsvPath = resolve(__dirname, '../docs/entries.csv');
 const outputCsvPath = resolve(__dirname, '../docs/cleaned_entries.csv');
 
-// Clean the content by removing HTML tags and special characters
 const cleanContent = (content: string): string => {
   const cleanHtml = sanitizeHtml(content, {
-    allowedTags: [], // Remove all tags
-    allowedAttributes: {}, // Remove all attributes
+    allowedTags: [],
+    allowedAttributes: {},
   });
   return cleanHtml.replace(/&nbsp;/g, ' ').trim();
 };
 
-// Read and clean the CSV entries
 const readAndCleanCsv = async (): Promise<JournalEntry[]> => {
   const entries: JournalEntry[] = [];
 
@@ -33,7 +30,6 @@ const readAndCleanCsv = async (): Promise<JournalEntry[]> => {
     fs.createReadStream(inputCsvPath)
       .pipe(csvParser())
       .on('data', (row) => {
-        // Check if row fields exist and parse correctly
         const entryId = row['Entry ID'] || '';
         const entryNumber = parseInt(row['Entry Number'], 10) || 0;
         const postDate = row['Post Date'] || '';
@@ -62,7 +58,6 @@ const readAndCleanCsv = async (): Promise<JournalEntry[]> => {
   });
 };
 
-// Write the cleaned entries back to a CSV file
 const writeCleanedCsv = async (entries: JournalEntry[]) => {
   const csv = csvWriter.createObjectCsvWriter({
     path: outputCsvPath,
@@ -79,7 +74,6 @@ const writeCleanedCsv = async (entries: JournalEntry[]) => {
   console.log('Cleaned CSV file written successfully.');
 };
 
-// Main function to execute the script
 const main = async () => {
   try {
     const entries = await readAndCleanCsv();

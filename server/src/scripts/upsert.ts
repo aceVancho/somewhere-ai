@@ -10,7 +10,7 @@ import dotenv from 'dotenv';
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 // const ENTRIES_CSV_PATH = 'src/docs/sample.csv';
-const ENTRIES_CSV_PATH = 'src/docs/entries.csv';
+const ENTRIES_CSV_PATH = 'src/docs/cleaned_entries.csv';
 
 interface Entry {
     entryId: string;
@@ -71,7 +71,8 @@ const createChunks = async (entries: Entry[]): Promise<ChunkedEntry[]> => {
                 metadata: {
                     entryNumber: entry.entryNumber,
                     postDate: entry.postDate,
-                    age: entry.age
+                    age: entry.age,
+                    text
                 },
                 content: text,
                 id: uuidv4()
@@ -101,7 +102,7 @@ const createEmbeddings = async (entries: ChunkedEntry[]) => {
         while (!finished) {
             try {
                 embeddingObj = await openai.embeddings.create({
-                    model: "text-embedding-ada-002",
+                    model: process.env.OPEN_AI_EMBEDDING_MODEL!,
                     encoding_format: "float",
                     input: entry.content,
                 });
@@ -147,6 +148,7 @@ const upsert = async () => {
     
     const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
     const index = pc.index(process.env.PINECONE_INDEX!);
+    console.log(await index.describeIndexStats())
     const BATCH_SIZE = 10; 
     for (let i = 0; i < pineconeRecords.length; i += BATCH_SIZE) {
         const batch = pineconeRecords.slice(i, i + BATCH_SIZE);
