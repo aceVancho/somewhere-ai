@@ -23,10 +23,9 @@ export const inputPrompt = (question: string) => new Promise<string>((resolve) =
 const ZEP_API_KEY = process.env.ZEP_API_KEY!
 
 let zepClient: ZepClient;
-const initializeZepClient = async () => {
+const initZepClient = async () => {
     try {
         zepClient = await ZepClient.init(ZEP_API_KEY);
-        console.log('ZepClient initialized');
     } catch (error) {
         console.error('Error initializing ZepClient:', error);
     }
@@ -36,9 +35,11 @@ const systemPrompt = `As an assistant designed to provide therapy, advice, criti
 
 const prompt = ChatPromptTemplate.fromMessages([
     ["system", systemPrompt],
-    ["system", 'Here are relevant past entries: {additionalContext}'],
-    new MessagesPlaceholder("additionalContext"),
-    ["system", 'Current conversation history:'],
+    ["system", 'Here are relevant past entries: {inputMatches}'],
+    new MessagesPlaceholder("inputMatches"),
+    ["system", 'Here are db matches from conversation history past entries: {historyMatches}'],
+    new MessagesPlaceholder("historyMatches"),
+    ["system", 'Current conversation {history}:'],
     new MessagesPlaceholder("history"),
     ["human", "{question}"],
 ]);
@@ -49,18 +50,16 @@ const buildChain = (sessionId: string) => {
         modelName: process.env.OPEN_AI_CHAT_MODEL,
     }).bind({ tools })
 
+    // const llmWithTools = llm.bind({ tools })
     const chain = prompt.pipe(llm);
 
     const chainWithHistory = new RunnableWithMessageHistory({
         runnable: chain,
-        getMessageHistory: async (sessionId) => {
-            const messageHistory = new ZepChatMessageHistory({
-                client: zepClient,
-                sessionId: sessionId,
-                memoryType: "perpetual",
-            })
-            return messageHistory
-        },
+        getMessageHistory: async (sessionId) => new ZepChatMessageHistory({
+            client: zepClient,
+            sessionId: sessionId,
+            memoryType: "perpetual",
+        }),
         inputMessagesKey: "question",
         historyMessagesKey: "history",
     });
@@ -68,26 +67,36 @@ const buildChain = (sessionId: string) => {
     return chainWithHistory;
 }
 
-const initSession = async (session_id: string, data?: any) => {
-    const session: Session = new Session({
-        session_id,
-        metadata: data || {}
-    });
-    
-    zepClient.memory.addSession(session)
+const initZepSession = async (session_id: string, data?: any) => {
+    zepClient.memory.addSession(new Session({ session_id, metadata: data || {} }))
 }
 
+const getConversationHistory = async (sessionId: string): Promise<string[]> => {
+    const history = await zepClient.memory.getMemory(sessionId);
+    return history?.messages?.map((message) => {
+        if (message.content) return `${message.role}: ${message.content}`;
+    }).filter((message): message is string => message !== undefined) || [];
+};
+
 export const run = async () => {
-    await initializeZepClient();
     const session_id: string = uuidv4();
-    const chain = buildChain(Date.now().toString())
-    initSession(session_id);
+    const chain = buildChain(session_id)
+    await initZepClient();
+    await initZepSession(session_id);
 
     while (true) {
         const inputText = await inputPrompt('Input: ')
-        const matches = await pineconeQuery(inputText)
+        const conversationHistory = await getConversationHistory(session_id)
+        const matches = await pineconeQuery(inputText, conversationHistory)
     
-        const additionalContext = matches.map((match) => {
+        const inputMatches = matches.inputMatches.map((match) => {
+            return new SystemMessage({ 
+                content: match?.metadata?.text as string,
+                response_metadata: {}
+            })
+        });
+
+        const historyMatches = matches.historyMatches.map((match) => {
             return new SystemMessage({ 
                 content: match?.metadata?.text as string,
                 response_metadata: {}
@@ -101,7 +110,8 @@ export const run = async () => {
         };
         const input = { 
             question: inputText + '\n', 
-            additionalContext,
+            inputMatches,
+            historyMatches,
             // dataFromDB: new SystemMessage({ 
             //     content: formatDataForSystemMessage(data), 
             //     response_metadata: {} 
@@ -111,10 +121,10 @@ export const run = async () => {
         const result = await chain.invoke(input, options); 
         handleToolCalls(result);
 
-        console.log(`\nAI Proctor: ${result.content}\n`);
+        console.log(`\nAI: ${result.content}\n`);
         // console.log(result)
         // console.log(result.lc_kwargs.additional_kwargs.tool_calls)
-    
+        //  console.log('lovely ',conversationHistory)
     }
 }
 
