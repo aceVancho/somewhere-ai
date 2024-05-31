@@ -31,14 +31,15 @@ const initZepClient = async () => {
     }
 };
 
-const systemPrompt = `As an assistant designed to provide therapy, advice, critical thinking, and deep questions, I am here to support you in your journey of self-discovery and growth. Utilizing advanced techniques, your queries are processed through a Retrieval-Augmented Generation (RAG) tool that retrieves matches from a Pinecone Database populated by your past journal entries. This approach allows me to incorporate relevant details from your history, helping me to better understand your past, your thinking patterns, and specific facts from your life. This enriched understanding enables me to offer more personalized and insightful responses to your questions.`
+const systemPrompt = `
+You are a tool designed for an online ai-powered journal. One of its defining features is to allow users to chat with their journal. This is accomplished via retrieval augmented generation and AI. A user will input text and this text along with the current conversation history will be passed to function designed to query a vector database using cosign similarity. The below context is the result of this combined input and conversation history query. Your role is to use this context to address the needs, questions, or concerns of the user. 
+
+From now on, act as a therapist. You are emotionally intelligent, a devil's advocate, compassionate, a critical thinker, lax, conversational, lightly humorous, curious, wise, a strategic question asker, thoughtful, and insightful. Your tone should remain conversational and you should fashion our language around how the author has written their own journal entries in order to better speak their language. You will use exerts from their entries to prove your points, provide analysis, and ask follow-up questions. DO NOT USE BULLET POINTS. Direct your tone as if you were speaking from the present (${Date.now()}).Additional Context: {additionalContext}
+`;
 
 const prompt = ChatPromptTemplate.fromMessages([
-    ["system", systemPrompt],
-    ["system", 'Here are relevant past entries: {inputMatches}'],
-    new MessagesPlaceholder("inputMatches"),
-    ["system", 'Here are db matches from conversation history past entries: {historyMatches}'],
-    new MessagesPlaceholder("historyMatches"),
+    ["system", `${systemPrompt}: {additionalContext}`],
+    new MessagesPlaceholder("additionalContext"),
     ["system", 'Current conversation {history}:'],
     new MessagesPlaceholder("history"),
     ["human", "{question}"],
@@ -46,7 +47,7 @@ const prompt = ChatPromptTemplate.fromMessages([
 
 const buildChain = (sessionId: string) => {
     const llm = new ChatOpenAI({
-        temperature: 0.8,
+        temperature: 0.4,
         modelName: process.env.OPEN_AI_CHAT_MODEL,
     }).bind({ tools })
 
@@ -87,16 +88,9 @@ export const run = async () => {
     while (true) {
         const inputText = await inputPrompt('Input: ')
         const conversationHistory = await getConversationHistory(session_id)
-        const matches = await pineconeQuery(inputText, conversationHistory)
+        const response = await pineconeQuery(inputText, conversationHistory)
     
-        const inputMatches = matches.inputMatches.map((match) => {
-            return new SystemMessage({ 
-                content: match?.metadata?.text as string,
-                response_metadata: {}
-            })
-        });
-
-        const historyMatches = matches.historyMatches.map((match) => {
+        const additionalContext = response.map((match) => {
             return new SystemMessage({ 
                 content: match?.metadata?.text as string,
                 response_metadata: {}
@@ -109,22 +103,16 @@ export const run = async () => {
             },
         };
         const input = { 
-            question: inputText + '\n', 
-            inputMatches,
-            historyMatches,
-            // dataFromDB: new SystemMessage({ 
-            //     content: formatDataForSystemMessage(data), 
-            //     response_metadata: {} 
-            // }) 
+            question: inputText + '\n',
+            additionalContext 
          }
     
-        const result = await chain.invoke(input, options); 
-        handleToolCalls(result);
+        const chainResponse = await chain.invoke(input, options); 
+        handleToolCalls(chainResponse);
 
-        console.log(`\nAI: ${result.content}\n`);
-        // console.log(result)
-        // console.log(result.lc_kwargs.additional_kwargs.tool_calls)
-        //  console.log('lovely ',conversationHistory)
+        console.log(`\nAI: ${chainResponse.content}\n`);
+        // console.log(chainResponse)
+        // console.log(chainResponse.lc_kwargs.additional_kwargs.tool_calls)
     }
 }
 
