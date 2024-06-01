@@ -96,11 +96,8 @@ const LoginPage = () => {
 
   return (
     <div className="flex h-screen">
-      <div className="w-full sm:w-1/5 md:w-2/6 flex flex-col items-center p-8 relative">
-        <div className="flex flex-col items-center mb-6">
-          <h1 className="text-5xl font-bold">Somewhere</h1>
-          <p className="leading-7">AI-Powered Online Journal</p>
-        </div>
+      <div className="w-full  lg:w-4/12 flex flex-col items-center p-8 relative">
+        <img className="w-9/12 mb-7" src={useLogo()} alt="logo" />
         <div className="mb-2">
           <h1 className="text-2xl font-bold">Log in to your account</h1>
           {/* <h2 className="scroll-m-20 text-xl font-extrabold tracking-tight lg:text-2xl">Log in to your account</h2> */}
@@ -189,7 +186,7 @@ const LoginPage = () => {
           </div>
         </div>
       </div>
-      <div className="hidden sm:flex md:flex w-4/5 bg-primary justify-center items-center text-white">
+      <div className="hidden lg:flex w-4/5 bg-primary justify-center items-center text-white">
         <p>Put your animation or picture here.</p>
       </div>
     </div>
