@@ -49,8 +49,6 @@ const LoginPage = () => {
       if (dropdownAvatar) dropdownAvatar.style.display = 'none';
       if (loginButtonElem) loginButtonElem.style.display = 'block';
     }
-    console.log('Updated isAuthenticated:', isAuthenticated);
-    console.log('Updated user:', user);
   }, [isAuthenticated, user]);
 
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -64,7 +62,6 @@ const LoginPage = () => {
   const { toast } = useToast();
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     const { email, password } = data;
-    console.log('Logging in with:', email, password)
     if (email && password) {
       try { 
         await login({ email, password });

@@ -9,6 +9,7 @@ export interface IAuthContextType {
     login: (user: IUser) => void;
     logout: () => void;
     signUp: (user: IUser) => void;
+    loading: boolean;
 }
 
 export interface IWordBankContextType {

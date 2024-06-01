@@ -24,7 +24,7 @@ async function run(): Promise<void> {
     app.use(express.json());
     app.use('/api/auth', authRoutes);
 
-    app.get('/', (req: Request, res: Response) => res.send('LexiconAI server is running.'));
+    app.get('/', (req: Request, res: Response) => res.send('Somewhere-AI server is running.'));
     app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
   } catch (error) {
     console.error("Failed to connect to MongoDB with Mongoose", error);

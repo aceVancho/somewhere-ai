@@ -15,7 +15,7 @@ router.post('/register', async (req: Request, res: Response) => {
             email: req.body.email,
         });
         const savedUser = await user.save();
-        const token = jwt.sign({ userId: user._id }, process.env.LEXICONAI_JWT_SECRET as 'string')
+        const token = jwt.sign({ userId: user._id }, process.env.SOMEWHERE_JWT_SECRET as 'string')
 
         res.status(201).json({ 
             id: savedUser._id, 
@@ -79,7 +79,7 @@ router.post('/signin', async (req: Request, res: Response) => {
         const passwordsMatch = await bcrypt.compare(password, user.password as 'string')
         if (!passwordsMatch) return res.status(400).json({ message: 'Invalid password.' });
 
-        const token = jwt.sign({ userId: user._id }, process.env.LEXICONAI_JWT_SECRET as 'string')
+        const token = jwt.sign({ userId: user._id }, process.env.SOMEWHERE_JWT_SECRET as 'string')
         res.json({ token, user: { email: user.email } }); 
     } catch (error) {
         res.status(500).json({ message: 'Error signing in.' });

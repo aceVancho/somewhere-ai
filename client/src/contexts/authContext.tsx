@@ -16,13 +16,18 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<IUser | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('lexiconAIToken')
-    if (storedToken) verifyToken(storedToken)
-  }, [])
+    const storedToken = localStorage.getItem('somewhereAIToken');
+    if (storedToken) {
+      setLoading(true);
+      verifyToken(storedToken).finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, []);
 
-  // sign up
   const signUp = async (userData: IUser) => {
     const email = userData.email;
     const password = userData.password;
@@ -39,8 +44,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const data = await response.json();
 
       if (response.ok) {
-
-        localStorage.setItem("lexiconAIToken", data.token);
+        localStorage.setItem("somewhereAIToken", data.token);
         setUser(data.user);
       } else {
         console.error(data.message);
@@ -50,11 +54,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // login
   const login = async (userData: IUser) => {
     const email = userData.email;
     const password = userData.password;
-  
+
     return new Promise(async (resolve, reject) => {
       try {
         const response = await fetch("http://localhost:4001/api/auth/signin", {
@@ -64,10 +67,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           },
           body: JSON.stringify({ email, password }),
         });
-  
+
         const data = await response.json();
         if (response.ok) {
-          localStorage.setItem("lexiconAIToken", data.token);
+          localStorage.setItem("somewhereAIToken", data.token);
           setUser({ email: data.user.email });
           resolve(true);
         } else {
@@ -81,13 +84,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     });
   };
 
-  // log out
   const logout = () => {
-    localStorage.removeItem('lexiconAIToken');
+    localStorage.removeItem('somewhereAIToken');
     setUser(null);
   };
 
-  // Verify Token
   const verifyToken = async (token: string) => {
     try {
       const response = await fetch('http://localhost:4001/api/auth/verify', {
@@ -96,26 +97,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
+      console.log(data);
 
       if (response.ok) {
-        setUser(data.user)
+        setUser(data.user);
       } else {
         console.error(data.message);
-        localStorage.removeItem('lexiconAIToken');
+        localStorage.removeItem('somewhereAIToken');
       }
     } catch (error) {
       console.error('Error validating token:', error);
+      localStorage.removeItem('somewhereAIToken');
     }
-  }
+  };
 
   const isAuthenticated = user !== null;
 
   return (
     <AuthContext.Provider
-      value={{ user, login, logout, signUp, isAuthenticated }}
+      value={{ user, login, logout, signUp, isAuthenticated, loading }}
     >
       {children}
     </AuthContext.Provider>

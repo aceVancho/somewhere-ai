@@ -7,12 +7,13 @@ import {
   ToastViewport,
 } from "@/components/ui/toast"
 import { useToast } from "@/components/ui/use-toast"
+import { SwipeDirection } from "@radix-ui/react-toast"
 
-export function Toaster() {
+export function Toaster({ swipeDirection = "right" as SwipeDirection, duration = 3000 }) {
   const { toasts } = useToast()
 
   return (
-    <ToastProvider duration={20000}>
+    <ToastProvider swipeDirection={swipeDirection} duration={duration}>
       {toasts.map(function ({ id, title, description, action, ...props }) {
         return (
           <Toast key={id} {...props}>

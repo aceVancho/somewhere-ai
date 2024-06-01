@@ -11,7 +11,7 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
     const token = authHeader.split(' ')[1];
 
     try {
-        const decodedUser = jwt.verify(token, process.env.LEXICONAI_JWT_SECRET as string);
+        const decodedUser = jwt.verify(token, process.env.SOMEWHERE_JWT_SECRET as string);
         (req as any).user = decodedUser;
         next();
     } catch (error) {

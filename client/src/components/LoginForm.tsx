@@ -92,8 +92,7 @@ const InputForm: React.FC =() => {
                   type="email" 
                   placeholder="you@example.com"
                   autoComplete="email" 
-                  {...field} 
-                  />
+                  {...field} />
               </FormControl>
               {/* <FormDescription>
                 This is your public display name.
@@ -114,8 +113,7 @@ const InputForm: React.FC =() => {
                   type="password" 
                   placeholder="p@$$w0Rd" 
                   autoComplete="new-password" 
-                  {...field} 
-                  />
+                  {...field} />
               </FormControl>
               {/* <FormDescription>
                 This is your public display name.
