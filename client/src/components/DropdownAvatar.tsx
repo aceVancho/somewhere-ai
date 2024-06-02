@@ -9,6 +9,7 @@ import {
   } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuth } from '../contexts/authContext';
+import { useToast } from './ui/use-toast';
 
 async function hashEmail(email: string) {
     const normalizedEmail = email.trim().toLowerCase();
@@ -29,6 +30,26 @@ const DropdownAvatar: React.FC = () => {
         if (user) hashEmail(user.email).then(hashedEmail => setGravatarHash(hashedEmail));
     }, [user])
 
+    const { toast } = useToast();
+
+    const handleLogout = () => {
+        try {
+            const username = user?.email.split('@')[0]
+            logout()
+            toast({
+                title: `✌️ Bye, ${username}!`,
+                description: "Logged out successfully.",
+              });
+        } catch (error) {
+            console.error(error);
+            toast({
+              variant: "destructive",
+              title: "Uh oh! Something went wrong.",
+              description: "There was a problem with your request.",
+            });
+        }
+    }
+
     return (
         <Avatar id="dropdownAvatar" className="shadow-lg">
             <DropdownMenu>
@@ -41,7 +62,7 @@ const DropdownAvatar: React.FC = () => {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem>Profile</DropdownMenuItem>
                     <DropdownMenuItem>Settings</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => { logout() }}>Logout</DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
                 </DropdownMenuContent>
                 </DropdownMenu>
             </Avatar>

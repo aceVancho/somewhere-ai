@@ -65,8 +65,9 @@ const LoginPanel = () => {
     if (email && password) {
       try { 
         await login({ email, password });
+        const username = email.split('@')[0]
         toast({
-          title: 'Welcome!',
+          title: `👋 Welcome back, ${username}!`,
           description: "You've logged in successfully.",
         });
         handleDismissModal();
