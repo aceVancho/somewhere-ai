@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/authContext';
 import { ThemeProvider } from "./contexts/ThemeProvider"
 import { Toaster } from "@/components/ui/toaster"
@@ -13,6 +13,7 @@ const App: React.FC = () => {
                       <Toaster />
                         <Routes>
                           <Route path="/" element={<Main />} />
+                          <Route path="*" element={<Navigate to="/" replace />} />
                         </Routes>
                   </BrowserRouter>
               </AuthProvider>
