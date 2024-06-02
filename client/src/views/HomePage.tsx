@@ -4,34 +4,16 @@ import { useNavigate, Link } from 'react-router-dom';
 import ModeToggle from '@/components/ModeToggle';
 import DropdownAvatar from '@/components/DropdownAvatar';
 import { Button } from "@/components/ui/button"
+import { CornerDownLeft, Mic, Paperclip } from "lucide-react"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import {
-  Card,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  Menubar,
-  MenubarContent,
-  MenubarItem,
-  MenubarMenu,
-  MenubarSeparator,
-  MenubarShortcut,
-  MenubarTrigger,
-} from "@/components/ui/menubar"
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuIndicator,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  NavigationMenuViewport,
-} from "@/components/ui/navigation-menu"
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider,
 
-
+} from "@/components/ui/tooltip"
 
 const HomePage: React.FC = () => {
   const { user, isAuthenticated, loading } = useAuth();
@@ -46,29 +28,16 @@ const HomePage: React.FC = () => {
   }, [isAuthenticated, user, loading, navigate]);
 
   if (loading) {
-    return <div> Loading...</div>; // Or any loading indicator
+    return <div> Loading...</div>; // skeletons
   }
 
   return (
-    <div id="home-container" className='flex flex-col w-full items-center'>
-      Home Page
-      <div className="bottom-8 w-full flex justify-between">
-            <ModeToggle />
-            <DropdownAvatar />
-        </div>
-        <Card className="sm:col-span-2">
-        <CardHeader className="pb-3">
-          <CardTitle>Your Orders</CardTitle>
-          <CardDescription className="max-w-lg text-balance leading-relaxed">
-            Introducing Our Dynamic Orders Dashboard for Seamless Management and
-            Insightful Analysis.
-          </CardDescription>
-        </CardHeader>
-        <CardFooter>
-          <Button>Create New Order</Button>
-        </CardFooter>
-      </Card>
-      <nav
+    <div id="home-container" className='flex w-full h-screen justify-evenly items-center'>
+                <div className="bottom-8 flex">
+                <ModeToggle />
+                <DropdownAvatar />
+          </div>
+          <nav
       className="grid gap-4 text-sm text-muted-foreground"
     >
       <Link to="#" className="font-semibold text-primary">
@@ -80,34 +49,49 @@ const HomePage: React.FC = () => {
       <Link to="#">Organizations</Link>
       <Link to="#">Advanced</Link>
     </nav>
-    <Menubar>
-    <MenubarMenu>
-      <MenubarTrigger>File</MenubarTrigger>
-      <MenubarContent>
-        <MenubarItem>
-          New Tab <MenubarShortcut>⌘T</MenubarShortcut>
-        </MenubarItem>
-        <MenubarItem>New Window</MenubarItem>
-        <MenubarSeparator />
-        <MenubarItem>Share</MenubarItem>
-        <MenubarSeparator />
-        <MenubarItem>Print</MenubarItem>
-      </MenubarContent>
-    </MenubarMenu>
-  </Menubar>
-  <NavigationMenu>
-  <NavigationMenuList>
-    <NavigationMenuItem>
-      <NavigationMenuTrigger>Item One</NavigationMenuTrigger>
-      <NavigationMenuContent>
-        <NavigationMenuLink>Link</NavigationMenuLink>
-      </NavigationMenuContent>
-    </NavigationMenuItem>
-  </NavigationMenuList>
-</NavigationMenu>
-
+    <form
+      className="relative overflow-hidden rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring"
+    >
+      <Label htmlFor="message" className="sr-only">
+        Message
+      </Label>
+      <Textarea
+        id="message"
+        placeholder="Type your message here..."
+        className="min-h-12 resize-none border-0 p-3 shadow-none focus-visible:ring-0"
+      />
+      <div className="flex items-center p-3 pt-0">
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <Paperclip className="size-4" />
+              <span className="sr-only">Attach file</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top">Attach File</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <Mic className="size-4" />
+              <span className="sr-only">Use Microphone</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top">Use Microphone</TooltipContent>
+        </Tooltip>
+        </TooltipProvider>
+        <Button type="submit" size="sm" className="ml-auto gap-1.5">
+          Send Message
+          <CornerDownLeft className="size-3.5" />
+        </Button>
+      </div>
+    </form>
+        
     </div>
+
   );
 };
 
 export default HomePage;
+

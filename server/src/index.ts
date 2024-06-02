@@ -4,7 +4,8 @@ dotenv.config({ path: path.resolve("../.env") });
 
 import express, { Express, Request, Response } from 'express';
 import mongoose from 'mongoose';
-import authRoutes from './routes/authRoutes';
+import userRoutes from './routes/userRoutes';
+import entryRoutes from './routes/entryRoutes';
 
 const morgan = require('morgan');
 const cors = require('cors');
@@ -22,7 +23,10 @@ async function run(): Promise<void> {
     app.use(cors({ origin: 'http://localhost:4002' }))
     app.use(morgan('dev'));
     app.use(express.json());
-    app.use('/api/auth', authRoutes);
+    // app.use('/api/auth', authRoutes);
+    app.use('/api/users', userRoutes);
+    app.use('/api/entry', entryRoutes);
+
 
     app.get('/', (req: Request, res: Response) => res.send('Somewhere-AI server is running.'));
     app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));

@@ -33,7 +33,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const password = userData.password;
 
     try {
-      const response = await fetch("http://localhost:4001/api/auth/register", {
+      const response = await fetch("http://localhost:4001/api/users/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -60,7 +60,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     return new Promise(async (resolve, reject) => {
       try {
-        const response = await fetch("http://localhost:4001/api/auth/signin", {
+        const response = await fetch("http://localhost:4001/api/users/signin", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -91,7 +91,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const verifyToken = async (token: string) => {
     try {
-      const response = await fetch('http://localhost:4001/api/auth/verify', {
+      const response = await fetch('http://localhost:4001/api/users/verify', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import path from "path";
 import { Storage } from '@google-cloud/storage';
 import { v4 as uuidv4 } from 'uuid';
-import { IWord } from "../types"; 
+import { IWord } from "../types/types"; 
 
 dotenv.config({ path: path.resolve(".env") });
 const storage = new Storage();
