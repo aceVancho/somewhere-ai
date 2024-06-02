@@ -30,7 +30,7 @@ const DropdownAvatar: React.FC = () => {
     }, [user])
 
     return (
-        <Avatar id="dropdownAvatar" className="">
+        <Avatar id="dropdownAvatar" className="shadow-lg">
             <DropdownMenu>
                 <DropdownMenuTrigger>
                     <AvatarImage src={`https://gravatar.com/avatar/${gravatarHash}`}/>
