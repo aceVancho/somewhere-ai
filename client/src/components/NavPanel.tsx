@@ -29,14 +29,14 @@ import {
 } from "@/components/ui/command"
 import { ChatBubbleIcon } from '@radix-ui/react-icons';
 
-const SidePanel: React.FC = () => {
+const NavPanel: React.FC = () => {
   const { user, isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!loading) {
       if (!isAuthenticated || !user) {
-        navigate('/login');
+        // navigate('/login');
       }
     }
   }, [isAuthenticated, user, loading, navigate]);
@@ -116,4 +116,4 @@ const SidePanel: React.FC = () => {
   );
 };
 
-export default SidePanel;
+export default NavPanel;

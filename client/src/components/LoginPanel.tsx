@@ -31,7 +31,7 @@ const FormSchema = z.object({
   }),
 })
 
-const LoginPage = () => {
+const LoginPanel = () => {
   const { user, login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -95,7 +95,6 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex h-screen">
       <div className="w-full lg:w-3/12 flex flex-col items-center p-8 relative">
         <img className="w-8/12 mb-7" src={useLogo()} alt="logo" />
         <div className="mb-2">
@@ -185,11 +184,8 @@ const LoginPage = () => {
           </div>
         </div>
       </div>
-      <div className="hidden lg:flex w-full bg-primary justify-center items-center text-white">
-        <p>Put your animation or picture here.</p>
-      </div>
-    </div>
+
   );
 };
 
-export default LoginPage;
+export default LoginPanel;
