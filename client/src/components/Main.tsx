@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuth } from '../contexts/authContext';
 import LoginPanel from './LoginPanel';
 import NavPanel from '@/components/NavPanel';
+import { Dashboard } from './Dashboard';
 
 const Main: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -12,6 +13,7 @@ const Main: React.FC = () => {
       <div className="hidden lg:flex w-full bg-primary justify-center items-center text-white">
         <p>Put your animation or picture here.</p>
       </div>
+      {/* <Dashboard /> */}
     </div>
   );
 };
