@@ -4,10 +4,11 @@ import LoginPanel from './LoginPanel';
 import NavPanel from '@/components/NavPanel';
 import { MainContainer } from './MainContainer';
 import { ContainerProvider } from '../contexts/containerContext';
+import { AuthPanel } from './AuthPanel';
 
 const Main: React.FC = () => {
   const { isAuthenticated } = useAuth();
-  const MainSidePanel = () => !isAuthenticated ? <LoginPanel /> : <NavPanel />
+  const MainSidePanel = () => !isAuthenticated ? <AuthPanel /> : <NavPanel />
 
   return (
     <ContainerProvider>
