@@ -1,42 +1,39 @@
 import React from 'react';
 import { useContainerContext } from '../contexts/containerContext';
 import AllEntries from './ContainerComponents/AllEntries';
+import { useAuth } from '@/contexts/authContext';
 
-const NewEntry = () => <div>New Entry</div>;
-const ImportExport = () => <div>Import/Export</div>;
-const Categories = () => <div>Categories</div>;
-const Tags = () => <div>Tags</div>;
-const Chat = () => <div>Chat</div>;
-const Stats = () => <div>Stats</div>;
-const Tools = () => <div>Tools</div>;
-const About = () => <div>About</div>;
-const Contact = () => <div>Contact</div>;
-const Donate = () => <div>Donate</div>;
-const Default = () => <p>Put your animation or picture here.</p>
-
-
-const componentsMap: { [key: string]: React.FC } = {
+// Replace anonymous functions with real components
+const containerComponentMap: { [key: string]: React.FC } = {
   ALL_ENTRIES: AllEntries,
-  NEW_ENTRY: NewEntry,
-  IMPORT_EXPORT: ImportExport,
-  CATEGORIES: Categories,
-  TAGS: Tags,
-  CHAT: Chat,
-  STATS: Stats,
-  TOOLS: Tools,
-  ABOUT: About,
-  CONTACT: Contact,
-  DONATE: Donate,
-  DEFAULT: Default
+  NEW_ENTRY: () => <div>New Entry</div>,
+  IMPORT_EXPORT: () => <div>Import/Export</div>,
+  CATEGORIES: () => <div>Categories</div>,
+  TAGS: () => <div>Tags</div>,
+  CHAT: () => <div>Chat</div>,
+  STATS: () => <div>Stats</div>,
+  TOOLS: () => <div>Tools</div>,
+  ABOUT: () => <div>About</div>,
+  CONTACT: () => <div>Contact</div>,
+  DONATE: () => <div>Donate</div>,
+  LOGIN: () => (
+    <div className='bg-primary w-full'>
+        <p>Put your animation or picture here.</p>
+    </div>
+  )
 };
 
 export const MainContainer: React.FC = () => {
     const { selectedOption } = useContainerContext();
-    const ComponentToRender = componentsMap[selectedOption] || AllEntries;
+    const { isAuthenticated } = useAuth();
+
+    const MainComponent = isAuthenticated
+    ? containerComponentMap[selectedOption] || AllEntries
+    : containerComponentMap['LOGIN'] ;
 
     return (
-        <div className="hidden lg:flex w-full p-8 bg-primary justify-center items-center text-white overflow-scroll overflow-x-hidden">
-            <ComponentToRender />
+        <div className="w-full flex text-white">
+            <MainComponent />
         </div>
     )
 }

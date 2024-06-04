@@ -66,7 +66,7 @@ const NavPanel: React.FC = () => {
   }
 
   return (
-    <div className="w-full lg:w-3/12 flex flex-col p-4">
+    <div className="w-full lg:w-3/12 flex flex-col p-4 border-r">
 <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 lg:hidden">
         <Sheet>
         <SheetTrigger asChild>
