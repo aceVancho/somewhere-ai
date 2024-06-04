@@ -22,4 +22,4 @@ declare global {
   }
 }
 
-export { IUser, IEntry }; // Ensure this file is treated as a module
+export { IUser, IEntry };

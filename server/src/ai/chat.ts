@@ -8,7 +8,7 @@ import { ZepChatMessageHistory } from "@getzep/zep-js/langchain";
 import { ChatPromptTemplate, MessagesPlaceholder, } from "@langchain/core/prompts";
 import { RunnableWithMessageHistory } from "@langchain/core/runnables";
 import { pineconeQuery } from "./query";
-import { handleToolCalls, tools } from "../tools/tools";
+import { handleToolCalls, tools } from "./tools";
 import readline from 'readline';
 
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
