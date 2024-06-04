@@ -2,19 +2,20 @@ import React from 'react';
 import { useAuth } from '../contexts/authContext';
 import LoginPanel from './LoginPanel';
 import NavPanel from '@/components/NavPanel';
-import { Dashboard } from './Dashboard';
+import { MainContainer } from './MainContainer';
+import { ContainerProvider } from '../contexts/containerContext';
 
 const Main: React.FC = () => {
   const { isAuthenticated } = useAuth();
+  const MainSidePanel = () => !isAuthenticated ? <LoginPanel /> : <NavPanel />
 
   return (
-    <div id="main" className='flex w-full h-screen'>
-      {!isAuthenticated ? <LoginPanel /> : <NavPanel />}
-      <div className="hidden lg:flex w-full bg-primary justify-center items-center text-white">
-        <p>Put your animation or picture here.</p>
+    <ContainerProvider>
+      <div id="main" className='flex w-full h-screen'>
+        <MainSidePanel />
+        <MainContainer />
       </div>
-      {/* <Dashboard /> */}
-    </div>
+    </ContainerProvider>
   );
 };
 

@@ -44,9 +44,13 @@ import { Label } from "@/components/ui/label"
 import { ChatBubbleIcon } from '@radix-ui/react-icons';
 import { DialogDemo } from './DialogDemo';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { useContainerContext } from '../contexts/containerContext';
+
 
 const NavPanel: React.FC = () => {
   const { user, isAuthenticated, loading } = useAuth();
+  const { setSelectedOption } = useContainerContext();
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -75,45 +79,45 @@ const NavPanel: React.FC = () => {
           </div>
         </SheetTrigger>
           <SheetContent side="left" className="flex flex-col justify-between">
-            <nav className="grid gap-6 text-lg font-medium">
+          <nav className="grid gap-6 text-lg font-medium">
               <Command className="w-full h-full flex-1">
                 <CommandInput placeholder="Search" />
                 <CommandList className="">
                   <CommandEmpty>No results found.</CommandEmpty>
                   <CommandGroup heading="Entries" className='my-2'>
-                    <CommandItem>
+                    <CommandItem onSelect={() => setSelectedOption('ALL_ENTRIES')}>
                       <Folder className="mr-2 h-4 w-4" />
                       <span>All Entries</span>
                     </CommandItem>
-                    <CommandItem>
+                    <CommandItem onSelect={() => setSelectedOption('NEW_ENTRY')}>
                       <Plus className="mr-2 h-4 w-4"/>
                       <span>New Entry</span>
                     </CommandItem>
-                    <CommandItem>
+                    <CommandItem onSelect={() => setSelectedOption('IMPORT_EXPORT')}>
                       <DialogDemo />
                     </CommandItem>
-                    <CommandItem>
+                    <CommandItem onSelect={() => setSelectedOption('CATEGORIES')}>
                       <FolderOpen className="mr-2 h-4 w-4" />
                       <span>Categories</span>
                     </CommandItem>
-                    <CommandItem>
+                    <CommandItem onSelect={() => setSelectedOption('TAGS')}>
                       <Tag className="mr-2 h-4 w-4" />
                       <span>Tags</span>
                     </CommandItem>
                   </CommandGroup>
                   <CommandSeparator className='my-2'/>
                   <CommandGroup heading="AI">
-                    <CommandItem>
+                    <CommandItem onSelect={() => setSelectedOption('CHAT')}>
                       <ChatBubbleIcon className="mr-2 h-4 w-4" />
                       <span>Chat</span>
                       <CommandShortcut>⌘P</CommandShortcut>
                     </CommandItem>
-                    <CommandItem>
+                    <CommandItem onSelect={() => setSelectedOption('STATS')}>
                       <BarChart4 className="mr-2 h-4 w-4" />
                       <span>Stats</span>
                       <CommandShortcut>⌘B</CommandShortcut>
                     </CommandItem>
-                    <CommandItem>
+                    <CommandItem onSelect={() => setSelectedOption('TOOLS')}>
                       <Hammer className="mr-2 h-4 w-4" />
                       <span>Tools</span>
                       <CommandShortcut>⌘S</CommandShortcut>
@@ -121,17 +125,17 @@ const NavPanel: React.FC = () => {
                   </CommandGroup>
                   <CommandSeparator className='my-2' />
                   <CommandGroup heading="Links">
-                    <CommandItem>
+                    <CommandItem onSelect={() => setSelectedOption('ABOUT')}>
                       <Store className="mr-2 h-4 w-4" />
                       <span>About</span>
                       <CommandShortcut>⌘X</CommandShortcut>
                     </CommandItem>
-                    <CommandItem>
+                    <CommandItem onSelect={() => setSelectedOption('CONTACT')}>
                       <LucideNotebookTabs className="mr-2 h-4 w-4" />
                       <span>Contact</span>
                       <CommandShortcut>⌘Y</CommandShortcut>
                     </CommandItem>
-                    <CommandItem>
+                    <CommandItem onSelect={() => setSelectedOption('DONATE')}>
                       <Gift className="mr-2 h-4 w-4" />
                       <span>Donate</span>
                       <CommandShortcut>⌘Z</CommandShortcut>
@@ -152,39 +156,39 @@ const NavPanel: React.FC = () => {
         <CommandList className="">
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Entries" className='my-2'>
-            <CommandItem>
+            <CommandItem onSelect={() => setSelectedOption('ALL_ENTRIES')}>
               <Folder className="mr-2 h-4 w-4" />
               <span>All Entries</span>
             </CommandItem>
-            <CommandItem>
+            <CommandItem onSelect={() => setSelectedOption('NEW_ENTRY')}>
               <Plus className="mr-2 h-4 w-4"/>
               <span>New Entry</span>
             </CommandItem>
-            <CommandItem>
+            <CommandItem onSelect={() => setSelectedOption('IMPORT_EXPORT')}>
               <DialogDemo />
             </CommandItem>
-            <CommandItem>
+            <CommandItem onSelect={() => setSelectedOption('CATEGORIES')}>
               <FolderOpen className="mr-2 h-4 w-4" />
               <span>Categories</span>
             </CommandItem>
-            <CommandItem>
+            <CommandItem onSelect={() => setSelectedOption('TAGS')}>
               <Tag className="mr-2 h-4 w-4" />
               <span>Tags</span>
             </CommandItem>
           </CommandGroup>
           <CommandSeparator className='my-2'/>
           <CommandGroup heading="AI">
-            <CommandItem>
+            <CommandItem onSelect={() => setSelectedOption('CHAT')}>
               <ChatBubbleIcon className="mr-2 h-4 w-4" />
               <span>Chat</span>
               <CommandShortcut>⌘P</CommandShortcut>
             </CommandItem>
-            <CommandItem>
+            <CommandItem onSelect={() => setSelectedOption('STATS')}>
               <BarChart4 className="mr-2 h-4 w-4" />
               <span>Stats</span>
               <CommandShortcut>⌘B</CommandShortcut>
             </CommandItem>
-            <CommandItem>
+            <CommandItem onSelect={() => setSelectedOption('TOOLS')}>
               <Hammer className="mr-2 h-4 w-4" />
               <span>Tools</span>
               <CommandShortcut>⌘S</CommandShortcut>
@@ -192,17 +196,17 @@ const NavPanel: React.FC = () => {
           </CommandGroup>
           <CommandSeparator className='my-2' />
           <CommandGroup heading="Links">
-            <CommandItem>
+            <CommandItem onSelect={() => setSelectedOption('ABOUT')}>
               <Store className="mr-2 h-4 w-4" />
               <span>About</span>
               <CommandShortcut>⌘X</CommandShortcut>
             </CommandItem>
-            <CommandItem>
+            <CommandItem onSelect={() => setSelectedOption('CONTACT')}>
               <LucideNotebookTabs className="mr-2 h-4 w-4" />
               <span>Contact</span>
               <CommandShortcut>⌘Y</CommandShortcut>
             </CommandItem>
-            <CommandItem>
+            <CommandItem onSelect={() => setSelectedOption('DONATE')}>
               <Gift className="mr-2 h-4 w-4" />
               <span>Donate</span>
               <CommandShortcut>⌘Z</CommandShortcut>
