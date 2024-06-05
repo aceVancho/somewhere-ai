@@ -6,9 +6,9 @@ export interface IUser {
 export interface IAuthContextType {
     user: IUser | null;
     isAuthenticated: boolean;
-    login: (user: IUser) => void;
+    login: (user: IUser) => Promise<void>;
     logout: () => void;
-    signUp: (user: IUser) => void;
+    signUp: (user: IUser) => Promise<void>;
     loading: boolean;
 }
 
