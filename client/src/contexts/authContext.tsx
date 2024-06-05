@@ -41,13 +41,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (response.ok) {
         localStorage.setItem("somewhereAIToken", data.token);
-        setUser(data.user);
+        setUser({ email: data.email });
       } else {
         throw new Error(data.message || 'Failed to sign up');
       }
     } catch (error) {
-      console.error("Signup error:", error);
-      throw error; // Re-throw the error to be caught by the form's onSubmit
+      console.error("Sign Up error:", error);
+      throw error;
     }
   };
 
