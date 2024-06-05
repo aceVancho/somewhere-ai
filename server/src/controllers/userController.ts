@@ -6,12 +6,18 @@ import 'dotenv/config';
 
 export const register = async (req: Request, res: Response) => {
     try {
+        const existingUser = await User.findOne({ email: req.body.email });
+        if (existingUser) {
+            return res.status(400).json({ message: 'Email already in use' });
+        }
+
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
         const user = new User({
             password: hashedPassword,
             email: req.body.email,
         });
         const savedUser = await user.save();
+
         const token = jwt.sign({ userId: user._id }, process.env.SOMEWHERE_JWT_SECRET as string);
 
         res.status(201).json({ 
@@ -20,7 +26,7 @@ export const register = async (req: Request, res: Response) => {
             token 
         });
     } catch (error: unknown) {
-        const message = (error as Error)?.message || 'An unknown error occurred.'
+        const message = (error as Error)?.message || 'An unknown error occurred.';
         res.status(500).json({ message });
     }
 };

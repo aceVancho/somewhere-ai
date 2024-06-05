@@ -21,7 +21,6 @@ async function hashEmail(email: string) {
     return hashHex;
 }
 
-
 const DropdownAvatar: React.FC = () => {
     const { user, logout } = useAuth();
     const [gravatarHash, setGravatarHash] = useState('');

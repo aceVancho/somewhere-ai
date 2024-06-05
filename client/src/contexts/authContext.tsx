@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { IUser, IAuthContextType } from "../types";
-import axios from "axios";
 
 const AuthContext = createContext<IAuthContextType | undefined>(undefined);
 
@@ -28,17 +27,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
-  const signUp = async (userData: IUser) => {
-    const email = userData.email;
-    const password = userData.password;
-
+  const signUp = async (userData: IUser): Promise<void> => {
     try {
       const response = await fetch("http://localhost:4001/api/users/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(userData),
       });
 
       const data = await response.json();
@@ -47,41 +43,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         localStorage.setItem("somewhereAIToken", data.token);
         setUser(data.user);
       } else {
-        console.error(data.message);
+        throw new Error(data.message || 'Failed to sign up');
       }
     } catch (error) {
-      console.error("There was an error!", error);
+      console.error("Signup error:", error);
+      throw error; // Re-throw the error to be caught by the form's onSubmit
     }
   };
 
-  const login = async (userData: IUser) => {
-    const email = userData.email;
-    const password = userData.password;
-
-    return new Promise(async (resolve, reject) => {
-      try {
-        const response = await fetch("http://localhost:4001/api/users/signin", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, password }),
-        });
-
-        const data = await response.json();
-        if (response.ok) {
-          localStorage.setItem("somewhereAIToken", data.token);
-          setUser({ email: data.user.email });
-          resolve(true);
-        } else {
-          console.error(data.message);
-          reject(data.message);
-        }
-      } catch (error) {
-        console.error("There was an error!", error);
-        reject(error);
+  const login = async (userData: IUser): Promise<void> => {
+    const { email, password } = userData;
+  
+    try {
+      const response = await fetch("http://localhost:4001/api/users/signin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      const data = await response.json();
+      if (response.ok) {
+        localStorage.setItem("somewhereAIToken", data.token);
+        setUser({ email: data.user.email });
+      } else {
+        console.error(data.message);
+        throw new Error(data.message);
       }
-    });
+    } catch (error) {
+      console.error("There was an error!", error);
+      throw error;
+    }
   };
 
   const logout = () => {
