@@ -8,7 +8,7 @@ export const AuthPanel: React.FC = () => {
   const [isSignUp, setIsSignUp] = useState(false);
 
   return (
-    <div className="w-full lg:w-3/12 flex flex-col items-center p-8 relative">
+    <div className="w-full lg:w-3/12 flex flex-col items-center p-8 relative h-full">
       <img className="w-8/12 mb-7" src={useLogo()} alt="logo" />
       {isSignUp ? (
         <SignUpForm switchToLogin={() => setIsSignUp(false)} />

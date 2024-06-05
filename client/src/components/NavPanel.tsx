@@ -151,7 +151,7 @@ const NavPanel: React.FC = () => {
           </SheetContent>
         </Sheet>
       </header>
-      <Command className="w-full h-full flex-1 hidden lg:block">
+      <Command className="w-full h-screen flex-1 hidden lg:block">
         <CommandInput placeholder="Search" />
         <CommandList className="">
           <CommandEmpty>No results found.</CommandEmpty>

@@ -97,7 +97,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ switchToSignUp }) => {
   };
 
   return (
-    <div className="w-full flex-1 flex flex-col relative">
+    <div className="w-full flex-1 flex flex-col relative h-screen">
       <div>
         <div className="mb-2">
           <h1 className="text-2xl font-bold">Log in to your account</h1>

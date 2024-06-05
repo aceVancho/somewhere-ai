@@ -17,7 +17,7 @@ const containerComponentMap: { [key: string]: React.FC } = {
   CONTACT: () => <div>Contact</div>,
   DONATE: () => <div>Donate</div>,
   LOGIN: () => (
-    <div className='bg-primary w-full'>
+    <div className='bg-primary w-full text-white lg:flex lg:items-center lg:justify-center h-full hidden'>
         <p>Put your animation or picture here.</p>
     </div>
   )
@@ -31,9 +31,5 @@ export const MainContainer: React.FC = () => {
     ? containerComponentMap[selectedOption] || AllEntries
     : containerComponentMap['LOGIN'] ;
 
-    return (
-        <div className="w-full flex text-white">
-            <MainComponent />
-        </div>
-    )
+    return <MainComponent />
 }
