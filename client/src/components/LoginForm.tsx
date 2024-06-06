@@ -33,24 +33,10 @@ interface LoginFormProps {
 }
 
 export const LoginForm: React.FC<LoginFormProps> = ({ switchToSignUp }) => {
-  const { user, login, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
-
-  useEffect(() => {
-    const dropdownAvatar = document.getElementById("dropdownAvatar");
-    const loginButtonElem = document.getElementById("loginButton");
-
-    if (isAuthenticated) {
-      if (dropdownAvatar) dropdownAvatar.style.display = "block";
-      if (loginButtonElem) loginButtonElem.style.display = "none";
-    } else {
-      if (dropdownAvatar) dropdownAvatar.style.display = "none";
-      if (loginButtonElem) loginButtonElem.style.display = "block";
-    }
-  }, [isAuthenticated, user]);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -71,23 +57,17 @@ export const LoginForm: React.FC<LoginFormProps> = ({ switchToSignUp }) => {
           title: `👋 Welcome back, ${username}!`,
           description: "You've logged in successfully.",
         });
-        handleDismissModal();
-      } catch (error) {
-        console.error(error);
+      } catch (error: any) {
+        console.error(error.message);
         toast({
           variant: "destructive",
           title: "Uh oh! Something went wrong.",
-          description: "There was a problem with your request.",
+          description: `${error.message || 'There was a problem with your request.'}`,
           action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
       }
     }
   }
-
-  const handleDismissModal = () => {
-    document.getElementById("loginCloseButton")?.click();
-    navigate("/");
-  };
 
   const handleNextClick = (event: { preventDefault: () => void }) => {
     event.preventDefault();
@@ -170,7 +150,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ switchToSignUp }) => {
                     <Link
                       to="registrationPage"
                       className="flex justify-end"
-                      onClick={handleDismissModal}
+                      // onClick={}
                     >
                       <Button variant="link">Forgot Password?</Button>
                     </Link>

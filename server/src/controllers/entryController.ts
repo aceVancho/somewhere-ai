@@ -5,11 +5,13 @@ import Entry from '../models/Entrys';
 export const createEntry = async (req: Request, res: Response): Promise<void> => {
   try {
     const { title, text, tags } = req.body;
-    const newEntry = new Entry({ title, text, tags });
+    const userId = req.user.id;
+    const newEntry = new Entry({ title, text, tags, user: userId });
     await newEntry.save();
     res.status(201).json(newEntry);
   } catch (error) {
-    res.status(500).json({ error: 'Error creating journal entry' });
+    console.error(error)
+    res.status(500).json({ error: `Error creating journal entry: ${error}` });
   }
 };
 

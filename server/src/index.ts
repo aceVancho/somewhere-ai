@@ -25,7 +25,7 @@ async function run(): Promise<void> {
     app.use(express.json());
     // app.use('/api/auth', authRoutes);
     app.use('/api/users', userRoutes);
-    app.use('/api/entry', entryRoutes);
+    app.use('/api/entries', entryRoutes);
 
 
     app.get('/', (req: Request, res: Response) => res.send('Somewhere-AI server is running.'));

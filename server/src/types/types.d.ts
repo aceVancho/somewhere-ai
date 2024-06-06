@@ -16,9 +16,10 @@ declare global {
   interface IEntry extends Document {
     title: string;
     text: string;
+    tags: string[];
+    user: mongoose.Schema.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
-    tags?: string[];
   }
 }
 

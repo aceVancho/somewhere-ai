@@ -33,7 +33,7 @@ const AllEntries: React.FC = () => {
   useEffect(() => {
     const fetchEntries = async () => {
       try {
-        const response = await fetch('http://localhost:4001/api/entry/entries', {
+        const response = await fetch('http://localhost:4001/api/entries', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('somewhereAIToken')}`
           }
@@ -67,7 +67,7 @@ const AllEntries: React.FC = () => {
 
   return (
     <div className='h-screen flex flex-col items-center w-full overflow-y-auto'>
-        {entries.map(entry => (
+        {entries.slice(0,5).map(entry => (
             <Card className='shadow-md w-1/2 my-2' key={entry._id}>
                 <CardHeader className="px-7">
                     <CardTitle>Entry #: {entry.title}</CardTitle>
