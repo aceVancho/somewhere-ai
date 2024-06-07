@@ -28,25 +28,22 @@ export default function NewEntry() {
         description: "You need to be logged in to create an entry.",
       });
       return;
-    }
-
-    const defaultTitle = title || new Date().toLocaleString();
+    };
 
     try {
-      const response = await fetch("http://localhost:4001/api/entries", {
+      const response = await fetch("http://localhost:4001/api/entries/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem("somewhereAIToken")}`,
         },
-        body: JSON.stringify({ title: defaultTitle, text, tags }),
+        body: JSON.stringify({ text, title }),
       });
 
       if (response.ok) {
-        const data = await response.json();
         toast({
           title: "Entry created",
-          description: `Your entry titled "${data.title}" has been created successfully.`,
+          description: `Your entry has been created successfully.`,
         });
         // Clear the form
         setTitle("");

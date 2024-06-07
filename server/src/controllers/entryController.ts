@@ -1,19 +1,37 @@
 import { Request, Response } from 'express';
 import Entry from '../models/Entrys';
+import { v4 as uuidv4 } from 'uuid';
+import { upsert } from '../api/upsert';
+import { createEntryMetadata } from '../api/openAi';
 
 // Create a new journal entry
 export const createEntry = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { title, text, tags } = req.body;
+    const { text } = req.body;
     const userId = req.user.id;
-    const newEntry = new Entry({ title, text, tags, user: userId });
+    const date = new Date().toLocaleString();
+
+    // Create the new entry with just the text and userId
+    const newEntry = new Entry({ text, user: userId });
     await newEntry.save();
+    
+    // Upsert chunks into Pinecone using the new entry's ID
+    await upsert({ userId, entryId: newEntry._id.toString(), text, date });
+
+    // Call OpenAI API to get the title, tags, and analysis
+    const { title, tags, analysis } = await createEntryMetadata(newEntry);
+
+    // Update the entry with the completion response
+    newEntry.set({ title, tags, analysis });
+    await newEntry.save();
+
     res.status(201).json(newEntry);
   } catch (error) {
-    console.error(error)
+    console.error(error);
     res.status(500).json({ error: `Error creating journal entry: ${error}` });
   }
 };
+
 
 // Get all journal entries
 export const getEntries = async (req: Request, res: Response): Promise<void> => {

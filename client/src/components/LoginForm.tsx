@@ -76,6 +76,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ switchToSignUp }) => {
     }
   };
 
+  const { handleSubmit } = useForm()
+
   return (
     <div className="w-full flex-1 flex flex-col relative h-screen">
       <div>

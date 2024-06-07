@@ -11,18 +11,11 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
 
     const token = authHeader.split(' ')[1];
 
-    // try {
-    //     const decodedUser = jwt.verify(token, process.env.SOMEWHERE_JWT_SECRET as string);
-    //     (req as any).user = decodedUser;
-    //     next();
-    // } catch (error) {
-    //     return res.status(403).json({ message: 'Invalid or expired token.' });
-    // }
     try {
         const decoded: any = jwt.verify(token, process.env.SOMEWHERE_JWT_SECRET as string);
         const user = await User.findById(decoded.userId);
         if (!user) {
-          throw new Error();
+          return res.status(404).json({ error: 'User not found' });
         }
         req.user = user; // Attach the user to the request object
         next();

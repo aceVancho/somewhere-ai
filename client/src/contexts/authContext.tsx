@@ -27,6 +27,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
+
   const signUp = async (userData: IUser): Promise<void> => {
     try {
       const response = await fetch("http://localhost:4001/api/users/register", {
@@ -93,8 +94,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
 
       const data = await response.json();
-      console.log(data);
-
+      console.log({data})
       if (response.ok) {
         setUser(data.user);
       } else {
@@ -105,7 +105,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.error('Error validating token:', error);
       localStorage.removeItem('somewhereAIToken');
     }
-  };
+};
 
   const isAuthenticated = user !== null;
 
