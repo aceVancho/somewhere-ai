@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -7,14 +6,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Toggle } from "@/components/ui/toggle";
+import { Ellipsis } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Entry {
   _id: string;
@@ -23,7 +17,7 @@ interface Entry {
   createdAt: string;
   updatedAt: string;
   tags: string[];
-  analysis: string;
+  sentiment: number;
 }
 
 const AllEntries: React.FC = () => {
@@ -59,7 +53,13 @@ const AllEntries: React.FC = () => {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className='h-screen flex flex-col items-center w-full overflow-y-auto'>
+        <Skeleton className="w-1/2 h-20 my-2" />
+        <Skeleton className="w-1/2 h-20 my-2" />
+        <Skeleton className="w-1/2 h-20 my-2" />
+      </div>
+    );
   }
 
   if (error) {
@@ -68,43 +68,19 @@ const AllEntries: React.FC = () => {
 
   return (
     <div className='h-screen flex flex-col items-center w-full overflow-y-auto'>
-        {entries.slice(0, 5).map(entry => (
-            <Card className='shadow-md w-1/2 my-2' key={entry._id}>
-                <CardHeader className="px-7">
-                    <CardTitle>{entry.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                    <TableHeader>
-                        <TableRow>
-                        <TableHead className="text-left">Date</TableHead>
-                        <TableHead className="text-left">ID</TableHead>
-                        <TableHead className="text-left">Tags</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableRow>
-                            <TableCell>{new Date(entry.createdAt).toLocaleDateString()}</TableCell>
-                            <TableCell>{entry._id}</TableCell>
-                            <TableCell>
-                                {entry.tags.map((tag, index) => (
-                                  <Badge key={index} className="text-xs" variant="outline">{tag}</Badge>
-                                ))}
-                            </TableCell>
-                        </TableRow>
-                    </TableBody>
-                    </Table>
-                    <div className="mt-4">
-                        <div>
-                            <strong>Text:</strong> {entry.text.split(' ').slice(0, 100).join(' ')}
-                        </div>
-                        <div className="mt-2">
-                            <strong>Analysis:</strong> {entry.analysis.split(' ').slice(0, 100).join(' ')}
-                        </div>
-                    </div>
-                </CardContent>
-                </Card>
-        ))}
+      {entries.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((entry) => (
+        <Card className='flex justify-between shadow-md w-5/6 my-2' key={entry._id}>
+          <CardHeader className="px-7 flex justify-evenly">
+              <CardTitle>{entry.title}</CardTitle>
+              <CardDescription>Created on: {new Date(entry.createdAt).toLocaleDateString()}</CardDescription>
+          </CardHeader>
+          <CardContent className='flex items-center'>
+            <Toggle aria-label="Toggle options">
+              <Ellipsis className="h-4 w-4 transition-transform transform rotate-0 group-hover:rotate-90" />
+            </Toggle>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 };

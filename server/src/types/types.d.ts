@@ -18,6 +18,7 @@ declare global {
     text: string;
     tags: string[];
     analysis: string;
+    sentiment: number;
     user: mongoose.Schema.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
