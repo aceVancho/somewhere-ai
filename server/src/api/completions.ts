@@ -18,6 +18,7 @@ export const getSplitTexts = async (text: string): Promise<string[]> => {
       ],
       model,
       temperature: 0.5,
+      response_format: {'type': 'json_object'}
     });
 
     const response = completion?.choices[0]?.message?.content;
@@ -25,7 +26,6 @@ export const getSplitTexts = async (text: string): Promise<string[]> => {
     if (!response) {
       throw new Error('OpenAI API returned an empty response');
     }
-
     return JSON.parse(response).splitTexts;
   } catch (error) {
     console.error('Error during OpenAI API call:', error);
@@ -43,6 +43,7 @@ export const analyzeSentiment = async (sentence: string): Promise<number> => {
       ],
       model,
       temperature: 0.5,
+      response_format: {'type': 'json_object'}
     });
 
     const response = completion?.choices[0]?.message?.content?.trim();
@@ -71,6 +72,8 @@ export const createEntryMetadata = async (entry: IEntry): Promise<{ title: strin
         { role: "user", content: `Entry: ${entry.text}` },
       ],
       model,
+      response_format: {'type': 'json_object'},
+      temperature: .8
     });
 
     const response = completion?.choices[0]?.message?.content;

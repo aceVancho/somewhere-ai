@@ -94,7 +94,6 @@ export const upsert = async ({ userId, entryId, text, date }: UpsertProps): Prom
     for (let i = 0; i < pineconeRecords.length; i += BATCH_SIZE) {
       const batch = pineconeRecords.slice(i, i + BATCH_SIZE);
       await upsertBatch(index, batch, userId);
-      console.log('Upserted', i);
     }
   } catch (error) {
     console.error(`Error in upsert process: ${error}`);
