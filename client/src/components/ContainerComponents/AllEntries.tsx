@@ -6,25 +6,31 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Toggle } from "@/components/ui/toggle";
 import { Ellipsis } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@radix-ui/react-accordion";
 
 interface Entry {
-  _id: string;
-  title: string;
-  text: string;
-  createdAt: string;
-  updatedAt: string;
-  tags: string[];
-  sentiment: number;
+    _id: string;
+    title: string;
+    text: string;
+    tags: string[];
+    analysis: string;
+    sentiment: number;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 const AllEntries: React.FC = () => {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [rotated, setRotated] = useState<boolean>(false);
+  const [rotated, setRotated] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const fetchEntries = async () => {
@@ -67,39 +73,53 @@ const AllEntries: React.FC = () => {
     return <div>Error: {error}</div>;
   }
 
-  const handleToggleClick = () => {
-    setRotated(!rotated);
+  const handleToggleClick = (id: string) => {
+    setRotated((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
   };
 
   return (
     <div className="h-screen flex flex-col items-center w-full overflow-y-auto">
-      {entries
-        .sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        )
-        .map((entry) => (
-          <Card
-            className="flex justify-between shadow-md w-5/6 my-2"
-            key={entry._id}
-          >
-            <CardHeader className="px-7 flex justify-evenly">
-              <CardTitle>{entry.title}</CardTitle>
-              <CardDescription>
-                Created on: {new Date(entry.createdAt).toLocaleDateString()}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex items-center">
-              <Ellipsis
-                aria-label="Toggle options"
-                className={`h-4 w-4 cursor-pointer ${
-                  rotated ? "rotate-90-cw" : "rotate-90-ccw"
-                }`}
-                onClick={handleToggleClick}
-              />
-            </CardContent>
-          </Card>
-        ))}
+      <Accordion type="multiple" className="w-5/6">
+        {entries
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )
+          .map((entry) => (
+            <AccordionItem value={entry._id} key={entry._id} className="my-4">
+              <Card className="shadow-md">
+                <AccordionTrigger asChild>
+                  <div className="flex justify-between items-center p-4">
+                    <div>
+                      <CardTitle>{entry.title}</CardTitle>
+                      <CardDescription className="mt-1">
+                        Created on: {new Date(entry.createdAt).toLocaleDateString()}
+                      </CardDescription>
+                    </div>
+                    <Ellipsis
+                      aria-label="Toggle options"
+                      className={`h-4 w-4 cursor-pointer transition-transform ${
+                        rotated[entry._id] ? "rotate-90-cw" : "rotate-90-ccw"
+                      }`}
+                      onClick={() => handleToggleClick(entry._id)}
+                    />
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent asChild>
+                  <CardContent>
+                    <p>Tags:{entry.tags.map((t) => <p>{t}</p>)}</p>
+                    <p>Sentiment: {entry.sentiment}</p>
+                    <p>Analysis: {entry.analysis.slice(0, 500)}...</p>
+                    <p>Entry Text:{entry.text.slice(0, 500)}...</p>
+                  </CardContent>
+                </AccordionContent>
+              </Card>
+            </AccordionItem>
+          ))}
+      </Accordion>
     </div>
   );
 };
