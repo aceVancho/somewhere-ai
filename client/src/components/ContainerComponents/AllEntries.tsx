@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -24,26 +24,27 @@ const AllEntries: React.FC = () => {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [rotated, setRotated] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchEntries = async () => {
       try {
-        const response = await fetch('http://localhost:4001/api/entries', {
+        const response = await fetch("http://localhost:4001/api/entries", {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('somewhereAIToken')}`
-          }
+            Authorization: `Bearer ${localStorage.getItem("somewhereAIToken")}`,
+          },
         });
         if (!response.ok) {
-          throw new Error('Failed to fetch entries');
+          throw new Error("Failed to fetch entries");
         }
         const data = await response.json();
         setEntries(data);
       } catch (err) {
         if (err instanceof Error) {
-            setError(err.message);
-          } else {
-            setError('An unknown error occurred');
-          }
+          setError(err.message);
+        } else {
+          setError("An unknown error occurred");
+        }
       } finally {
         setLoading(false);
       }
@@ -54,7 +55,7 @@ const AllEntries: React.FC = () => {
 
   if (loading) {
     return (
-      <div className='h-screen flex flex-col items-center w-full overflow-y-auto'>
+      <div className="h-screen flex flex-col items-center w-full overflow-y-auto">
         <Skeleton className="w-1/2 h-20 my-2" />
         <Skeleton className="w-1/2 h-20 my-2" />
         <Skeleton className="w-1/2 h-20 my-2" />
@@ -66,21 +67,39 @@ const AllEntries: React.FC = () => {
     return <div>Error: {error}</div>;
   }
 
+  const handleToggleClick = () => {
+    setRotated(!rotated);
+  };
+
   return (
-    <div className='h-screen flex flex-col items-center w-full overflow-y-auto'>
-      {entries.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((entry) => (
-        <Card className='flex justify-between shadow-md w-5/6 my-2' key={entry._id}>
-          <CardHeader className="px-7 flex justify-evenly">
+    <div className="h-screen flex flex-col items-center w-full overflow-y-auto">
+      {entries
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
+        .map((entry) => (
+          <Card
+            className="flex justify-between shadow-md w-5/6 my-2"
+            key={entry._id}
+          >
+            <CardHeader className="px-7 flex justify-evenly">
               <CardTitle>{entry.title}</CardTitle>
-              <CardDescription>Created on: {new Date(entry.createdAt).toLocaleDateString()}</CardDescription>
-          </CardHeader>
-          <CardContent className='flex items-center'>
-            <Toggle aria-label="Toggle options">
-              <Ellipsis className="h-4 w-4 transition-transform transform rotate-0 group-hover:rotate-90" />
-            </Toggle>
-          </CardContent>
-        </Card>
-      ))}
+              <CardDescription>
+                Created on: {new Date(entry.createdAt).toLocaleDateString()}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex items-center">
+              <Ellipsis
+                aria-label="Toggle options"
+                className={`h-4 w-4 cursor-pointer ${
+                  rotated ? "rotate-90-cw" : "rotate-90-ccw"
+                }`}
+                onClick={handleToggleClick}
+              />
+            </CardContent>
+          </Card>
+        ))}
     </div>
   );
 };
