@@ -19,10 +19,25 @@ declare global {
     tags: string[];
     analysis: string;
     sentiment: number;
+    goals: string[];
+    encouragements: string[];
+    questions: string[]
     user: mongoose.Schema.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
   }
+
+  // title: { type: String, default: '' },
+  // text: { type: String, required: true },
+  // tags: { type: [String], default: [] },
+  // analysis: { type: String, default: '' },
+  // sentiment: { type: Number, default: 0 },
+  // goals: { type: [String], default: [] },
+  // encouragements: { type: [String], default: [] },
+  // questions: { type: [String], default: [] },
+  // user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  // createdAt: { type: Date, default: Date.now },
+  // updatedAt: { type: Date, default: Date.now }
 
   interface EntryChunk {
     id: string;

@@ -14,6 +14,7 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@radix-ui/react-accordion";
+import { Badge } from "../ui/badge";
 
 interface Entry {
     _id: string;
@@ -22,6 +23,9 @@ interface Entry {
     tags: string[];
     analysis: string;
     sentiment: number;
+    goals: string[];
+    encouragements: string[];
+    questions: string[]
     createdAt: Date;
     updatedAt: Date;
 }
@@ -110,8 +114,11 @@ const AllEntries: React.FC = () => {
                 </AccordionTrigger>
                 <AccordionContent asChild>
                   <CardContent>
-                    <p>Tags:{entry.tags.map((t) => <p>{t}</p>)}</p>
+                    <p>{entry.tags.map((t) => <Badge variant="outline">{t}</Badge>)}</p>
                     <p>Sentiment: {entry.sentiment}</p>
+                    <p>Goals:{entry.goals.map((g) => <p>{g}</p>)}</p>
+                    <p>Encouragements:{entry.encouragements.map((e) => <p>{e}</p>)}</p>
+                    <p>Questions:{entry.questions.map((q) => <p>{q}</p>)}</p>
                     <p>Analysis: {entry.analysis.slice(0, 500)}...</p>
                     <p>Entry Text:{entry.text.slice(0, 500)}...</p>
                   </CardContent>

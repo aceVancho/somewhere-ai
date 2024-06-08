@@ -4,6 +4,33 @@ import { v4 as uuidv4 } from 'uuid';
 import { upsert } from '../api/upsert';
 import { createEntryMetadata } from '../api/completions';
 
+// export const createEntry = async (req: Request, res: Response): Promise<void> => {
+//   try {
+//     const { text } = req.body;
+//     const userId = req.user.id;
+//     const date = new Date().toLocaleString();
+
+//     // Create the new entry with just the text and userId
+//     const newEntry = new Entry({ text, user: userId });
+//     await newEntry.save();
+
+//     // Upsert chunks into Pinecone using the new entry's ID
+//     await upsert({ userId, entryId: newEntry._id.toString(), text, date });
+
+//     // Call OpenAI API to get the title, tags, analysis, and sentiment
+//     const { title, tags, analysis, sentiment } = await createEntryMetadata(newEntry);
+
+//     // Update the entry with the completion response
+//     newEntry.set({ title, tags, analysis, sentiment });
+//     await newEntry.save();
+
+//     res.status(201).json(newEntry);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: `Error creating journal entry: ${error}` });
+//   }
+// };
+
 export const createEntry = async (req: Request, res: Response): Promise<void> => {
   try {
     const { text } = req.body;
@@ -13,15 +40,15 @@ export const createEntry = async (req: Request, res: Response): Promise<void> =>
     // Create the new entry with just the text and userId
     const newEntry = new Entry({ text, user: userId });
     await newEntry.save();
-
+    
     // Upsert chunks into Pinecone using the new entry's ID
     await upsert({ userId, entryId: newEntry._id.toString(), text, date });
 
-    // Call OpenAI API to get the title, tags, analysis, and sentiment
-    const { title, tags, analysis, sentiment } = await createEntryMetadata(newEntry);
+    // Call OpenAI API to get the metadata
+    const metadata = await createEntryMetadata(newEntry);
 
     // Update the entry with the completion response
-    newEntry.set({ title, tags, analysis, sentiment });
+    newEntry.set(metadata);
     await newEntry.save();
 
     res.status(201).json(newEntry);
