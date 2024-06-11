@@ -11,7 +11,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { Ellipsis, Info } from "lucide-react";
+import { Ellipsis, Info, Pencil, Trash2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Accordion,
@@ -24,6 +24,20 @@ import { Badge } from "../ui/badge";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "../ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useAuth } from "@/contexts/authContext";
+import { useToast } from "../ui/use-toast";
 
 interface Entry {
   _id: string;
@@ -185,6 +199,77 @@ const AllEntries: React.FC = () => {
     </div>
   );
 
+  const EditDeleteOptions: React.FC<{ entry: Entry }> = ({ entry }) => {
+    const { toast } = useToast();
+    const handleDelete = async (entryId: string) => {
+      try {
+        const response = await fetch(
+          `http://localhost:4001/api/entries/${entryId}`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem(
+                "somewhereAIToken"
+              )}`,
+            },
+          }
+        );
+        if (response.ok) {
+          setEntries((prevEntries) =>
+            prevEntries.filter((entry) => entry._id !== entryId)
+          );
+          toast({
+            title: "Entry deleted",
+            description: `Your entry has been deleted successfully.`,
+          });
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Error deleting entry");
+        }
+      } catch (error) {
+        console.error("Error deleting entry:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: (error as Error).message,
+        });
+      }
+    };
+
+    return (
+      <div className="flex w-full justify-end mt-4">
+        <Button>
+          <Pencil className="mr-2 h-4 w-4" /> Edit
+        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive" className="ml-2">
+              <Trash2 className="mr-2 h-4 w-4" /> Delete
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                Are you sure you want to delete "{entry.title}"?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete your
+                entry and remove your data from our servers.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => handleDelete(entry._id)}>
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    );
+  };
+
   return (
     <div className="h-screen flex flex-col items-center w-full overflow-y-auto">
       <Accordion type="multiple" className="w-5/6">
@@ -220,6 +305,7 @@ const AllEntries: React.FC = () => {
                   </TabsList>
                   <TabsContent value="Entry" className="pt-2">
                     <p className="leading-7">{entry.text}...</p>
+                    <EditDeleteOptions entry={entry} />
                   </TabsContent>
                   <TabsContent value="Analysis" className="pt-2 flex flex-col">
                     <section className="flex flex-col sm:flex-row justify-evenly items-center">
