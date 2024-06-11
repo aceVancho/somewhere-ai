@@ -145,7 +145,7 @@ const AllEntries: React.FC = () => {
   };
 
   const GoalsCard: React.FC<{ entry: Entry }> = ({ entry }) => (
-    <div className="flex flex-col w-full mt-4">
+    <div className="flex flex-col w-full mt-4 p-5">
       <h4 className="leading-7 scroll-m-20 text-2xl font-semibold tracking-tight">
         Goals
       </h4>
@@ -164,7 +164,7 @@ const AllEntries: React.FC = () => {
   );
 
   const AnalysisCard: React.FC<{ entry: Entry }> = ({ entry }) => (
-    <div className="flex flex-col w-full mt-4">
+    <div className="flex flex-col w-full mt-4 p-5">
       <h4 className="leading-7 scroll-m-20 text-2xl font-semibold tracking-tight">
         Analysis
       </h4>
@@ -173,7 +173,7 @@ const AllEntries: React.FC = () => {
   );
 
   const QuestionsCard: React.FC<{ entry: Entry }> = ({ entry }) => (
-    <div className="flex flex-col w-full mt-4">
+    <div className="flex flex-col w-full mt-4 p-5">
       <h4 className="leading-7 scroll-m-20 text-2xl font-semibold tracking-tight">
         Questions
       </h4>
@@ -202,17 +202,15 @@ const AllEntries: React.FC = () => {
                     Created on: {new Date(entry.createdAt).toLocaleDateString()}
                   </CardDescription>
                 </div>
-                <CardContent>
-                  <AccordionTrigger asChild>
-                    <Ellipsis
-                      aria-label="Toggle options"
-                      className={`h-4 w-4 cursor-pointer transition-transform ${
-                        rotated[entry._id] ? "rotate-90-cw" : "rotate-90-ccw"
-                      }`}
-                      onClick={() => handleToggleClick(entry._id)}
-                    />
-                  </AccordionTrigger>
-                </CardContent>
+                <AccordionTrigger asChild>
+                  <Ellipsis
+                    aria-label="Toggle options"
+                    className={`h-4 w-4 cursor-pointer transition-transform ${
+                      rotated[entry._id] ? "rotate-90-cw" : "rotate-90-ccw"
+                    }`}
+                    onClick={() => handleToggleClick(entry._id)}
+                  />
+                </AccordionTrigger>
               </Card>
               <AccordionContent asChild className="">
                 <Tabs defaultValue="Entry" className="w-full mt-5">
