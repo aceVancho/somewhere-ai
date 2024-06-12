@@ -11,7 +11,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { Ellipsis, Info, Pencil, Trash2 } from "lucide-react";
+import { Edit, Ellipsis, Info, Pencil, Trash2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Accordion,
@@ -38,6 +38,20 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/authContext";
 import { useToast } from "../ui/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface Entry {
   _id: string;
@@ -57,7 +71,6 @@ const AllEntries: React.FC = () => {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [rotated, setRotated] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const fetchEntries = async () => {
@@ -99,13 +112,6 @@ const AllEntries: React.FC = () => {
   if (error) {
     return <div>Error: {error}</div>;
   }
-
-  const handleToggleClick = (id: string) => {
-    setRotated((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
 
   const SentimentCard: React.FC<{ entry: Entry }> = ({ entry }) => {
     const sentimentPercentage = ((entry.sentiment + 1) / 2) * 100;
@@ -270,6 +276,111 @@ const AllEntries: React.FC = () => {
     );
   };
 
+  const EntryDropDownOptions: React.FC<{ entry: Entry }> = ({ entry }) => {
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+    const handleToggleClick = () => {
+      setIsDropdownOpen((prev) => !prev);
+    };
+
+    const { toast } = useToast();
+    const handleDelete = async (entryId: string) => {
+      try {
+        const response = await fetch(
+          `http://localhost:4001/api/entries/${entryId}`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem(
+                "somewhereAIToken"
+              )}`,
+            },
+          }
+        );
+        if (response.ok) {
+          setEntries((prevEntries) =>
+            prevEntries.filter((entry) => entry._id !== entryId)
+          );
+          toast({
+            title: "Entry deleted",
+            description: `Your entry has been deleted successfully.`,
+          });
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Error deleting entry");
+        }
+      } catch (error) {
+        console.error("Error deleting entry:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: (error as Error).message,
+        });
+      }
+    };
+
+    const DeleteEntryAlertDialogue: React.FC<{ entry: Entry }> = ({
+      entry,
+    }) => {
+      return (
+        <AlertDialog>
+          <DropdownMenuItem onClick={(e) => e.preventDefault()}>
+            <AlertDialogTrigger asChild>
+              <div className="flex text-sm">
+                <Trash2 className="mr-2 h-4 w-4" />
+                <span>Delete</span>
+              </div>
+            </AlertDialogTrigger>
+          </DropdownMenuItem>
+
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                Are you sure you want to delete "{entry.title}"?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete your
+                entry and remove your data from our servers.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => handleDelete(entry._id)}>
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      );
+    };
+
+    return (
+      <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+        <DropdownMenuTrigger asChild>
+          <div onClick={handleToggleClick}>
+            <Ellipsis
+              aria-label="Toggle options"
+              className={`h-4 w-4 cursor-pointer transition-transform ${
+                isDropdownOpen ? "rotate-90-cw" : "rotate-90-ccw"
+              }`}
+            />
+          </div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56">
+          <DropdownMenuGroup>
+            <DropdownMenuItem>
+              <Edit className="mr-2 h-4 w-4" />
+              <span>Edit</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DeleteEntryAlertDialogue entry={entry} />
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  };
+
   return (
     <div className="h-screen flex flex-col items-center w-full overflow-y-auto">
       <Accordion type="multiple" className="w-5/6">
@@ -280,23 +391,18 @@ const AllEntries: React.FC = () => {
           )
           .map((entry) => (
             <AccordionItem value={entry._id} key={entry._id} className="my-4">
-              <Card className="shadow-md flex justify-between items-center p-4">
-                <div className="flex flex-col">
-                  <CardTitle>{entry.title}</CardTitle>
-                  <CardDescription className="mt-1">
-                    Created on: {new Date(entry.createdAt).toLocaleDateString()}
-                  </CardDescription>
-                </div>
-                <AccordionTrigger asChild>
-                  <Ellipsis
-                    aria-label="Toggle options"
-                    className={`h-4 w-4 cursor-pointer transition-transform ${
-                      rotated[entry._id] ? "rotate-90-cw" : "rotate-90-ccw"
-                    }`}
-                    onClick={() => handleToggleClick(entry._id)}
-                  />
-                </AccordionTrigger>
-              </Card>
+              <AccordionTrigger asChild>
+                <Card className="shadow-md flex justify-between items-center p-4">
+                  <div className="flex flex-col">
+                    <CardTitle>{entry.title}</CardTitle>
+                    <CardDescription className="mt-1">
+                      Created on:{" "}
+                      {new Date(entry.createdAt).toLocaleDateString()}
+                    </CardDescription>
+                  </div>
+                  <EntryDropDownOptions entry={entry} />
+                </Card>
+              </AccordionTrigger>
               <AccordionContent asChild className="">
                 <Tabs defaultValue="Entry" className="w-full mt-5">
                   <TabsList className="grid w-full grid-cols-2">
@@ -305,14 +411,17 @@ const AllEntries: React.FC = () => {
                   </TabsList>
                   <TabsContent value="Entry" className="pt-2">
                     <p className="leading-7">{entry.text}...</p>
-                    <EditDeleteOptions entry={entry} />
                   </TabsContent>
                   <TabsContent value="Analysis" className="pt-2 flex flex-col">
                     <section className="flex flex-col sm:flex-row justify-evenly items-center">
                       <SentimentCard entry={entry} />
                       <p className="w-3/4">
-                        {entry.tags.map((t) => (
-                          <Badge className="mx-1 leading-7" variant="outline">
+                        {entry.tags.map((t, index) => (
+                          <Badge
+                            key={`badge-${index}`}
+                            className="mx-1 leading-7"
+                            variant="outline"
+                          >
                             {t}
                           </Badge>
                         ))}
