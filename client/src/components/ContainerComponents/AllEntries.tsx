@@ -15,10 +15,11 @@ import { Edit, Ellipsis, Info, Pencil, Trash2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Accordion,
+  AccordionContent,
   AccordionItem,
   AccordionTrigger,
-  AccordionContent,
-} from "@radix-ui/react-accordion";
+  CustomEntryAccordionTrigger,
+} from "@/components/ui/accordion";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "../ui/badge";
 import { Label } from "@/components/ui/label";
@@ -52,6 +53,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Separator } from "../ui/separator";
 
 interface Entry {
   _id: string;
@@ -205,77 +207,6 @@ const AllEntries: React.FC = () => {
     </div>
   );
 
-  const EditDeleteOptions: React.FC<{ entry: Entry }> = ({ entry }) => {
-    const { toast } = useToast();
-    const handleDelete = async (entryId: string) => {
-      try {
-        const response = await fetch(
-          `http://localhost:4001/api/entries/${entryId}`,
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem(
-                "somewhereAIToken"
-              )}`,
-            },
-          }
-        );
-        if (response.ok) {
-          setEntries((prevEntries) =>
-            prevEntries.filter((entry) => entry._id !== entryId)
-          );
-          toast({
-            title: "Entry deleted",
-            description: `Your entry has been deleted successfully.`,
-          });
-        } else {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Error deleting entry");
-        }
-      } catch (error) {
-        console.error("Error deleting entry:", error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: (error as Error).message,
-        });
-      }
-    };
-
-    return (
-      <div className="flex w-full justify-end mt-4">
-        <Button>
-          <Pencil className="mr-2 h-4 w-4" /> Edit
-        </Button>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="destructive" className="ml-2">
-              <Trash2 className="mr-2 h-4 w-4" /> Delete
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                Are you sure you want to delete "{entry.title}"?
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete your
-                entry and remove your data from our servers.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => handleDelete(entry._id)}>
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
-    );
-  };
-
   const EntryDropDownOptions: React.FC<{ entry: Entry }> = ({ entry }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -390,26 +321,29 @@ const AllEntries: React.FC = () => {
               new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           )
           .map((entry) => (
-            <AccordionItem value={entry._id} key={entry._id} className="my-4">
-              <AccordionTrigger asChild>
-                <Card className="shadow-md flex justify-between items-center p-4">
-                  <div className="flex flex-col">
-                    <CardTitle>{entry.title}</CardTitle>
-                    <CardDescription className="mt-1">
-                      Created on:{" "}
-                      {new Date(entry.createdAt).toLocaleDateString()}
-                    </CardDescription>
+            <AccordionItem value={entry._id} key={entry._id} className="my-4 border rounded-md shadow-md">
+              <CustomEntryAccordionTrigger className="w-full items-center p-5">
+                <div className="flex justify-between w-full items-center">
+                  <div className="flex flex-col items-start">
+                    <p className="font-semibold">{entry.title}</p>
+                    <p className="text-sm text-muted-foreground">
+                    Created on:{" "}
+                    {new Date(entry.createdAt).toLocaleDateString()}
+                    </p>
                   </div>
                   <EntryDropDownOptions entry={entry} />
-                </Card>
-              </AccordionTrigger>
+                </div>
+              </CustomEntryAccordionTrigger>
               <AccordionContent asChild className="">
-                <Tabs defaultValue="Entry" className="w-full mt-5">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="Entry">Entry</TabsTrigger>
-                    <TabsTrigger value="Analysis">Analysis</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="Entry" className="pt-2">
+                <Separator className="mb-5"/>
+                <Tabs defaultValue="Entry" className="w-full mt-2">
+                  <div className="flex justify-center">
+                    <TabsList className="grid w-1/2 grid-cols-2">
+                      <TabsTrigger value="Entry">Entry</TabsTrigger>
+                      <TabsTrigger value="Analysis">Analysis</TabsTrigger>
+                    </TabsList>
+                  </div>
+                  <TabsContent value="Entry" className="px-4">
                     <p className="leading-7">{entry.text}...</p>
                   </TabsContent>
                   <TabsContent value="Analysis" className="pt-2 flex flex-col">
