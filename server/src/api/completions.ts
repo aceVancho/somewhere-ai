@@ -118,12 +118,35 @@ const generateAnalysis = async (text: string): Promise<string> => {
   try {
     const completion = await openai.chat.completions.create({
       messages: [
-        { role: "system", content: prompts.generateAnalysis },
-        { role: "user", content: `Entry: ${text}` },
+        // { role: "system", content: prompts.generateAnalysis },
+        // { role: "user", content: `Entry: ${text}` },
+        {
+          "role": "system",
+          // @ts-ignore
+          "content": [
+            {
+              "text": prompts.generateAnalysis,
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": text
+            }
+          ]
+        },
       ],
       model,
-      temperature: 0.9,
-      response_format: {'type': 'json_object'}
+      temperature: 1.1,
+      max_tokens: 4095,
+      top_p: 1,
+      frequency_penalty: .69,
+      presence_penalty: .1,
+      // response_format: {'type': 'json_object'}
     });
 
     const response = completion?.choices[0]?.message?.content;
@@ -132,7 +155,8 @@ const generateAnalysis = async (text: string): Promise<string> => {
       throw new Error('OpenAI API returned an empty response');
     }
 
-    return JSON.parse(response).analysis;
+    return response;
+    // return JSON.parse(response).analysis;
   } catch (error) {
     console.error('Error generating analysis:', error);
     throw new Error('Failed to generate analysis');

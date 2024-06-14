@@ -190,7 +190,7 @@ const AllEntries: React.FC = () => {
       <h4 className="leading-7 scroll-m-20 text-2xl font-semibold tracking-tight">
         Analysis
       </h4>
-      <p className="my-1 leading-7">{entry.analysis}...</p>
+      <p className="my-1 leading-7 whitespace-pre-wrap">{entry.analysis}...</p>
     </div>
   );
 
@@ -325,7 +325,7 @@ const AllEntries: React.FC = () => {
               <CustomEntryAccordionTrigger className="w-full items-center p-5">
                 <div className="flex justify-between w-full items-center">
                   <div className="flex flex-col items-start">
-                    <p className="font-semibold">{entry.title}</p>
+                    <p className="font-semibold text-left">{entry.title}</p>
                     <p className="text-sm text-muted-foreground">
                     Created on:{" "}
                     {new Date(entry.createdAt).toLocaleDateString()}
@@ -344,7 +344,7 @@ const AllEntries: React.FC = () => {
                     </TabsList>
                   </div>
                   <TabsContent value="Entry" className="px-4">
-                    <p className="leading-7">{entry.text}...</p>
+                    <p className="leading-7 whitespace-pre-wrap">{entry.text}</p>
                   </TabsContent>
                   <TabsContent value="Analysis" className="pt-2 flex flex-col">
                     <section className="flex flex-col sm:flex-row justify-evenly items-center">
