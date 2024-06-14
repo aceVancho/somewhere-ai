@@ -1,17 +1,17 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 type ContainerContextType = {
-  selectedOption: string;
-  setSelectedOption: (option: string) => void;
+  selectedContainer: string;
+  setSelectedContainer: (option: string) => void;
 };
 
 const ContainerContext = createContext<ContainerContextType | undefined>(undefined);
 
 export const ContainerProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [selectedOption, setSelectedOption] = useState<string>('ALL_ENTRIES');
+  const [selectedContainer, setSelectedContainer] = useState<string>('ALL_ENTRIES');
 
   return (
-    <ContainerContext.Provider value={{ selectedOption, setSelectedOption }}>
+    <ContainerContext.Provider value={{ selectedContainer, setSelectedContainer }}>
       {children}
     </ContainerContext.Provider>
   );

@@ -25,11 +25,11 @@ const containerComponentMap: { [key: string]: React.FC } = {
 };
 
 export const MainContainer: React.FC = () => {
-    const { selectedOption } = useContainerContext();
+    const { selectedContainer } = useContainerContext();
     const { isAuthenticated } = useAuth();
 
     const MainComponent = isAuthenticated
-    ? containerComponentMap[selectedOption] || AllEntries
+    ? containerComponentMap[selectedContainer] || AllEntries
     : containerComponentMap['LOGIN'] ;
 
     return <MainComponent />

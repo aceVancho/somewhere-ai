@@ -11,10 +11,12 @@ import {
 } from "@/components/ui/tooltip";
 import { useToast } from "../ui/use-toast";
 import { useAuth } from "@/contexts/authContext";
+import { useContainerContext } from "@/contexts/containerContext";
 
 export default function NewEntry() {
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
+  const {setSelectedContainer} = useContainerContext()
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
   const [tags, setTags] = useState<string[]>([]);
@@ -30,37 +32,43 @@ export default function NewEntry() {
       return;
     };
 
-    try {
-      const response = await fetch("http://localhost:4001/api/entries/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("somewhereAIToken")}`,
-        },
-        body: JSON.stringify({ text, title }),
-      });
+    console.log('Fake post...')
+    setTimeout(() => {
+      console.log('Switch to All Entries...')
+      setSelectedContainer('ALL_ENTRIES')
+    }, 5000);
 
-      if (response.ok) {
-        toast({
-          title: "Entry created",
-          description: `Your entry has been created successfully.`,
-        });
-        // Clear the form
-        setTitle("");
-        setText("");
-        setTags([]);
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Error creating entry");
-      }
-    } catch (error) {
-      console.error("Error creating entry:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: (error as Error).message,
-      });
-    }
+    // try {
+    //   const response = await fetch("http://localhost:4001/api/entries/create", {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       "Authorization": `Bearer ${localStorage.getItem("somewhereAIToken")}`,
+    //     },
+    //     body: JSON.stringify({ text, title }),
+    //   });
+
+    //   if (response.ok) {
+    //     toast({
+    //       title: "Entry created",
+    //       description: `Your entry has been created successfully.`,
+    //     });
+    //     // Clear the form
+    //     setTitle("");
+    //     setText("");
+    //     setTags([]);
+    //   } else {
+    //     const errorData = await response.json();
+    //     throw new Error(errorData.message || "Error creating entry");
+    //   }
+    // } catch (error) {
+    //   console.error("Error creating entry:", error);
+    //   toast({
+    //     variant: "destructive",
+    //     title: "Error",
+    //     description: (error as Error).message,
+    //   });
+    // }
   };
 
   return (
