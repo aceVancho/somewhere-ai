@@ -90,16 +90,6 @@ export const signin = async (req: Request, res: Response) => {
     }
 };
 
-// export const verify = async (req: Request, res: Response) => {
-//     try {
-//         const user = await User.findById((req as any).user.userId);
-//         if (!user) return res.status(404).json({ message: 'User not found.' });
-//         return res.json({ user });
-//     } catch (error) {
-//         res.status(500).json({ message: 'Error verifying user.' });
-//     }
-// };
-
 export const verify = async (req: Request, res: Response) => {
     try {
         const user = await User.findById(req.user.id); // Note the use of _id

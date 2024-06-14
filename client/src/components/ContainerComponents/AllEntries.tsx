@@ -127,7 +127,7 @@ const AllEntries: React.FC = () => {
     return (
       <HoverCard>
         <HoverCardTrigger asChild>
-          <Card className="cursor-pointer">
+          <Card className="cursor-pointer shadow:md">
             <CardHeader className="pb-2">
               <CardDescription>Sentiment</CardDescription>
               <CardTitle className="text-4xl">
@@ -347,13 +347,13 @@ const AllEntries: React.FC = () => {
                     <p className="leading-7 whitespace-pre-wrap">{entry.text}</p>
                   </TabsContent>
                   <TabsContent value="Analysis" className="pt-2 flex flex-col">
-                    <section className="flex flex-col sm:flex-row justify-evenly items-center">
+                    <section className="flex mt-4 justify-evenly w-full">
                       <SentimentCard entry={entry} />
-                      <p className="w-3/4">
+                      <p className="w-1/2 mt-4">
                         {entry.tags.map((t, index) => (
                           <Badge
                             key={`badge-${index}`}
-                            className="mx-1 leading-7"
+                            className="m-1 leading-7"
                             variant="outline"
                           >
                             {t}

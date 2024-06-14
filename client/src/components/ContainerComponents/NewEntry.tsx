@@ -19,10 +19,13 @@ export default function NewEntry() {
   const {setSelectedContainer} = useContainerContext()
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
-  const [tags, setTags] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setLoading(true);
+
     if (!isAuthenticated || !user) {
       toast({
         variant: "destructive",
@@ -30,46 +33,58 @@ export default function NewEntry() {
         description: "You need to be logged in to create an entry.",
       });
       return;
-    };
+    }
 
-    console.log('Fake post...')
-    setTimeout(() => {
-      console.log('Switch to All Entries...')
-      setSelectedContainer('ALL_ENTRIES')
-    }, 5000);
+    try {
+      const response = await fetch("http://localhost:4001/api/entries/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("somewhereAIToken")}`,
+        },
+        body: JSON.stringify({ text, title }),
+      });
 
-    // try {
-    //   const response = await fetch("http://localhost:4001/api/entries/create", {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       "Authorization": `Bearer ${localStorage.getItem("somewhereAIToken")}`,
-    //     },
-    //     body: JSON.stringify({ text, title }),
-    //   });
-
-    //   if (response.ok) {
-    //     toast({
-    //       title: "Entry created",
-    //       description: `Your entry has been created successfully.`,
-    //     });
-    //     // Clear the form
-    //     setTitle("");
-    //     setText("");
-    //     setTags([]);
-    //   } else {
-    //     const errorData = await response.json();
-    //     throw new Error(errorData.message || "Error creating entry");
-    //   }
-    // } catch (error) {
-    //   console.error("Error creating entry:", error);
-    //   toast({
-    //     variant: "destructive",
-    //     title: "Error",
-    //     description: (error as Error).message,
-    //   });
-    // }
+      if (response.ok) {
+        toast({
+          title: "Entry created",
+          description: `Your entry has been created successfully.`,
+        });
+        setTitle("");
+        setText("");
+        setSelectedContainer('ALL_ENTRIES')
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error creating entry");
+      }
+    } catch (error) {
+      console.error("Error creating entry:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: (error as Error).message,
+      });
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div id="newEntryLoading" className="h-1/2 flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <h2 className=" font-medium text-xl text-muted-foreground mb-3">Just a sec.</h2>
+          <div className="spinner flex gap-1">
+            <div className="rect1"></div>
+            <div className="rect2"></div>
+            <div className="rect3"></div>
+            <div className="rect4"></div>
+            <div className="rect5"></div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex items-start justify-center h-full py-5">

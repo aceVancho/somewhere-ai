@@ -238,9 +238,13 @@ const generateQuestions = async (text: string): Promise<string[]> => {
   }
 };
 
-export const createEntryMetadata = async (entry: IEntry): Promise<{ title: string; tags: string[]; analysis: string; sentiment: number; goals: string[]; encouragements: string[]; questions: string[] }> => {
+interface MetadataOptions {
+  title: string
+}
+
+export const createEntryMetadata = async (entry: IEntry, options: MetadataOptions): Promise<{ title: string; tags: string[]; analysis: string; sentiment: number; goals: string[]; encouragements: string[]; questions: string[] }> => {
   try {
-    const title = await generateTitle(entry.text);
+    const title = options.title ? options.title : await generateTitle(entry.text);
     const tags = await generateTags(entry.text);
     const analysis = await generateAnalysis(entry.text);
     const splitTexts = await getSplitTexts(entry.text);

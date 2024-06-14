@@ -29,7 +29,7 @@ const MobileEntriesGroup = () => {
   return (
     <div className="flex flex-col">
       <div className="my-1">
-        <Separator />
+        {/* <Separator /> */}
         <p className="text-sm text-muted-foreground pt-2">Entries</p>
       </div>
       <SheetClose className="hover:bg-secondary hover:text-foreground">
@@ -133,7 +133,7 @@ const DesktopEntriesGroup = () => {
   return (
     <div className="flex flex-col">
       <div className="my-1">
-        <Separator />
+        {/* <Separator /> */}
         <p className="text-sm text-muted-foreground pt-2">Entries</p>
       </div>
       <div className="hover:bg-secondary hover:text-foreground">
@@ -233,10 +233,10 @@ const DesktopLinksGroup = () => {
 };
 
 const MobileNav = () => (
-  <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 lg:hidden">
+  <header className="sticky top-0 flex h-16 items-center gap-4 bg-background px-4 md:px-6 lg:hidden">
     <Sheet>
       <SheetTrigger asChild>
-        <div className="w-full flex justify-between items-center p-4">
+        <div className="w-full flex justify-between items-center p-4 border-b">
           <button className="btn btn-outline btn-icon">
             <Menu className="h-5 w-5" />
             <span className="sr-only">Toggle navigation menu</span>
