@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { useAuth } from "../contexts/authContext";
-import { useNavigate } from "react-router-dom";
 import ModeToggle from "./ModeToggle";
 import DropdownAvatar from "./DropdownAvatar";
 import { useLogo } from "./Logo";

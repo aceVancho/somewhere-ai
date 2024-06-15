@@ -18,6 +18,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import 'animate.css';
 
 const FormSchema = z.object({
   email: z.string().min(2, {
@@ -59,12 +60,19 @@ export const LoginForm: React.FC<LoginFormProps> = ({ switchToSignUp }) => {
         });
       } catch (error: any) {
         console.error(error.message);
+        document.getElementById('password')?.classList.add('animate__shakeX')
         toast({
           variant: "destructive",
           title: "Uh oh! Something went wrong.",
           description: `${error.message || 'There was a problem with your request.'}`,
           action: <ToastAction altText="Try again">Try again</ToastAction>,
         });
+      } 
+      finally {
+        setTimeout(() => {
+          document.getElementById('password')?.classList.remove('animate__shakeX')
+          
+        }, 1000);
       }
     }
   }
@@ -128,13 +136,14 @@ export const LoginForm: React.FC<LoginFormProps> = ({ switchToSignUp }) => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <div className="relative">
+                      <div className="relative animate__animated" id="password">
                         <Input
                           type={passwordVisible ? "text" : "password"}
                           placeholder="p@$$w0Rd"
                           autoComplete="new-password"
                           {...field}
                           className="pr-10"
+                          
                         />
                         <button
                           type="button"
