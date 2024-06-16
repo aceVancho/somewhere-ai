@@ -1,8 +1,8 @@
 import React from 'react';
 import { useContainerContext } from '../contexts/containerContext';
-import AllEntries from './ContainerComponents/AllEntries';
+import AllEntries from '../views/AllEntries/AllEntries';
 import { useAuth } from '@/contexts/authContext';
-import NewEntry from './ContainerComponents/NewEntry';
+import NewEntry from '../views/NewEntry/NewEntry';
 
 // Replace anonymous functions with real components
 const containerComponentMap: { [key: string]: React.FC } = {
