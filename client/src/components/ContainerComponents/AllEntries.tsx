@@ -118,16 +118,16 @@ const AllEntries: React.FC = () => {
   const SentimentCard: React.FC<{ entry: Entry }> = ({ entry }) => {
     const sentimentPercentage = ((entry.sentiment + 1) / 2) * 100;
     const sentimentLabel =
-      entry.sentiment > 0.2
+      entry.sentiment > 0.1
         ? "Positive"
-        : entry.sentiment < -0.2
+        : entry.sentiment < -0.1
         ? "Negative"
         : "Neutral";
 
     return (
       <HoverCard>
         <HoverCardTrigger asChild>
-          <Card className="cursor-pointer shadow:md">
+          <Card className="cursor-pointer shadow:md h-40">
             <CardHeader className="pb-2">
               <CardDescription>Sentiment</CardDescription>
               <CardTitle className="text-4xl">
@@ -347,7 +347,7 @@ const AllEntries: React.FC = () => {
                     <p className="leading-7 whitespace-pre-wrap">{entry.text}</p>
                   </TabsContent>
                   <TabsContent value="Analysis" className="pt-2 flex flex-col">
-                    <section className="flex mt-4 justify-evenly w-full">
+                    <section className="flex mt-4 justify-evenly w-full items-center">
                       <SentimentCard entry={entry} />
                       <p className="w-1/2 mt-4">
                         {entry.tags.map((t, index) => (
