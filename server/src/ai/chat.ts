@@ -107,11 +107,13 @@ export const run = async () => {
             additionalContext 
          }
     
+         console.log('before', await zepClient.memory.getMemory(session_id))
         const chainResponse = await chain.invoke(input, options); 
         handleToolCalls(chainResponse);
 
-        console.log(`\nAI: ${chainResponse.content}\n`);
-        // console.log(chainResponse)
+        // console.log(`\nAI: ${chainResponse.content}\n`);
+        console.log('after', await zepClient.memory.getMemory(session_id))
+        // console.log(JSON.stringify(chainResponse, null, 4))
         // console.log(chainResponse.lc_kwargs.additional_kwargs.tool_calls)
     }
 }
