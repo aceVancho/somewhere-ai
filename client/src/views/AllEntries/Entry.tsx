@@ -3,28 +3,12 @@ import {
   AccordionItem,
   AccordionContent,
 } from "@/components/ui/accordion";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import EntryHeader from "./EntryHeader";
 import EntryTab from "./EntryTab";
 import AnalysisTab from "./AnalysisTab";
 import ChatTab from "./ChatTab";
-
-interface EntryProps {
-  entry: {
-    _id: string;
-    title: string;
-    text: string;
-    tags: string[];
-    analysis: string;
-    sentiment: number;
-    goals: string[];
-    encouragements: string[];
-    questions: string[];
-    createdAt: Date;
-    updatedAt: Date;
-  };
-}
 
 const Entry: React.FC<EntryProps> = ({ entry }) => {
   return (

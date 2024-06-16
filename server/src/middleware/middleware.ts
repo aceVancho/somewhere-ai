@@ -15,11 +15,31 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
         const decoded: any = jwt.verify(token, process.env.SOMEWHERE_JWT_SECRET as string);
         const user = await User.findById(decoded.userId);
         if (!user) {
-          return res.status(404).json({ error: 'User not found' });
+            return res.status(404).json({ error: 'User not found' });
         }
         req.user = user; // Attach the user to the request object
         next();
-      } catch (error) {
+    } catch (error) {
         res.status(401).json({ error: 'Invalid token' });
-      }
+    }
+};
+
+export const socketAuthMiddleware = async (socket: any, next: (err?: Error) => void) => {
+    const token = socket.handshake.auth.token;
+
+    if (!token) {
+        return next(new Error('Authorization required.'));
+    }
+
+    try {
+        const decoded: any = jwt.verify(token, process.env.SOMEWHERE_JWT_SECRET as string);
+        const user = await User.findById(decoded.userId);
+        if (!user) {
+            return next(new Error('User not found.'));
+        }
+        socket.user = user;
+        next();
+    } catch (error) {
+        next(new Error('Invalid token.'));
+    }
 };

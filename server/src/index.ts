@@ -1,14 +1,13 @@
 import dotenv from 'dotenv';
 import path from 'path';
-dotenv.config({ path: path.resolve("../.env") });
-
 import express, { Express, Request, Response } from 'express';
 import mongoose from 'mongoose';
-import http from 'http'; // Import http to create a server instance
-import { Server as SocketIOServer } from 'socket.io'; // Import socket.io server
+import http from 'http';
 import userRoutes from './routes/userRoutes';
 import entryRoutes from './routes/entryRoutes';
+import SocketHandler from './socket/socketHandler';
 
+dotenv.config({ path: path.resolve("../.env") });
 const morgan = require('morgan');
 const cors = require('cors');
 
@@ -16,13 +15,6 @@ const app: Express = express();
 const PORT = process.env.PORT || 4001;
 const uri = process.env.MONGODB_CONNECTION_STRING as string;
 const server = http.createServer(app);
-const io = new SocketIOServer(server, {
-  cors: {
-    origin: 'http://localhost:4002',
-    methods: ['GET', 'POST']
-  }
-})
-
 
 async function run(): Promise<void> {
   try {
@@ -38,24 +30,7 @@ async function run(): Promise<void> {
     app.use('/api/entries', entryRoutes);
 
     // Init Socket
-    io.on('connection', (socket) => {
-      console.log('new client connected...')
-
-      socket.on('joinSession', async (sessionId) => {
-        socket.join(sessionId);
-        console.log(`Client joined session: ${sessionId}`);
-      })
-
-      socket.on('message', async (data) => {
-        const { sessionId, message } = data;
-
-        io.to(sessionId).emit(message);
-      })
-
-      socket.on('disconnect', () => {
-        console.log('Client disconnect');
-      })
-    })
+    new SocketHandler(server);
 
     // Check fetch and listen
     app.get('/', (req: Request, res: Response) => res.send('Somewhere-AI server is running.'));
