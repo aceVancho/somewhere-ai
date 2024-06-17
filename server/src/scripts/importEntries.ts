@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import csv from 'csv-parser';
 import fs from 'fs';
 import path from 'path';
-import Entry from '../models/Entrys'; // Adjust the path as needed
+import Entry from '../models/Entry'; // Adjust the path as needed
 import dotenv from 'dotenv';
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });

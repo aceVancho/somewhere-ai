@@ -1,6 +1,7 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { socketAuthMiddleware } from '../middleware/middleware';
 import SessionHandler from '../api/sessionHandler';
+import Entry from '../models/Entry';
 
 class SocketHandler {
     private io: SocketIOServer;
@@ -31,7 +32,6 @@ class SocketHandler {
         const { sessionId } = data;
         socket.join(sessionId);
         socket.data.sessionId = sessionId;
-        this.SessionHandler.createChain(sessionId);
         console.log(`Client joined session: ${sessionId}`);
 
         // If conversation exists, emit a new message with history
@@ -46,9 +46,7 @@ class SocketHandler {
         try {
             // TODO: put invoke/options logic in SessionHandler
             const options = { configurable: { sessionId } };
-            const input = { 
-                question: message
-             }
+            const input = { question: message }
             const response = await chain?.invoke(input, options)
 
             this.io.to(sessionId).emit('message', {

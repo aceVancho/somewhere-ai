@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import Entry from '../models/Entrys';
+import Entry from '../models/Entry';
 import { upsert } from '../api/upsert';
 import { createEntryMetadata } from '../api/completions';
 
