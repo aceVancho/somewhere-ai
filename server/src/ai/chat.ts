@@ -70,6 +70,8 @@ const buildChain = (sessionId: string) => {
 
 const initZepSession = async (session_id: string, data?: any) => {
     zepClient.memory.addSession(new Session({ session_id, metadata: data || {} }))
+    zepClient.memory.getMemory
+    zepClient.memory.getSession
 }
 
 const getConversationHistory = async (sessionId: string): Promise<string[]> => {
@@ -80,10 +82,12 @@ const getConversationHistory = async (sessionId: string): Promise<string[]> => {
 };
 
 export const run = async () => {
-    const session_id: string = uuidv4();
+    const session_id: string = '0001';
     const chain = buildChain(session_id)
     await initZepClient();
-    await initZepSession(session_id);
+    // await initZepSession(session_id);
+    // console.log('getMemory -- ', await zepClient.memory.getMemory(session_id))
+    // console.log('getSession -- ', await zepClient.memory.getSession(session_id))
 
     while (true) {
         const inputText = await inputPrompt('Input: ')
@@ -108,12 +112,13 @@ export const run = async () => {
          }
     
          console.log('before', await zepClient.memory.getMemory(session_id))
+         console.log('after', await zepClient.memory.getMemory(session_id))
         const chainResponse = await chain.invoke(input, options); 
         handleToolCalls(chainResponse);
 
         // console.log(`\nAI: ${chainResponse.content}\n`);
-        console.log('after', await zepClient.memory.getMemory(session_id))
-        // console.log(JSON.stringify(chainResponse, null, 4))
+        console.log(JSON.stringify(chainResponse, null, 4))
+
         // console.log(chainResponse.lc_kwargs.additional_kwargs.tool_calls)
     }
 }

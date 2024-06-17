@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/authContext";
 
 interface Message {
   text: string;
-  timestamp: Date;
+  timestamp: string;
   user: string;
 }
 
@@ -43,12 +43,21 @@ const ChatCard: React.FC<EntryProps> = ({ entry }) => {
 
     // Listen for new messages
     newSocket.on('message', (msg: { text: string; timestamp: string; user: string }) => {
-      console.log(msg.timestamp);
+      console.log(msg);
       setMessages((prevMessages) => [
         ...prevMessages,
-        { text: msg.text, timestamp: new Date(msg.timestamp), user: msg.user }
+        { text: msg.text, timestamp: msg.timestamp, user: msg.user }
       ]);
     });
+
+    newSocket.on('history', (history) => {
+      setMessages(history)
+    })
+
+    newSocket.on('error', (error) => {
+      // TODO: properly handle
+      console.error(error);
+    })
 
     return () => {
       newSocket.close();
@@ -61,7 +70,7 @@ const ChatCard: React.FC<EntryProps> = ({ entry }) => {
       if (message.trim() && socket) {
         const newMessage: Message = {
           text: message,
-          timestamp: new Date(),
+          timestamp: new Date().toLocaleString(),
           user: user?.email || 'Anonymous'
         };
         setMessages((prevMessages) => [...prevMessages, newMessage]);
@@ -80,7 +89,7 @@ const ChatCard: React.FC<EntryProps> = ({ entry }) => {
       <div className="flex-grow overflow-y-auto">
         {messages.map((msg, index) => (
           <div key={index} className="p-2">
-            <span>{msg.timestamp.toLocaleTimeString()} [{msg.user}]: </span>
+            <span>{msg.timestamp || ''} [{msg.user}]: </span>
             <span>{msg.text}</span>
           </div>
         ))}
