@@ -52,12 +52,12 @@ const ChatCard: React.FC<EntryProps> = ({ entry }) => {
 
     newSocket.on('history', (history) => {
       setMessages(history)
-    })
+    });
 
     newSocket.on('error', (error) => {
       // TODO: properly handle
       console.error(error);
-    })
+    });
 
     return () => {
       newSocket.close();
@@ -83,19 +83,32 @@ const ChatCard: React.FC<EntryProps> = ({ entry }) => {
       }
     }
   };
+  
 
   return (
-    <div className="flex flex-col justify-center">
-      <div className="flex-grow overflow-y-auto">
+    <div className="flex flex-col h-full justify-center w-full">
+      <div className="flex-grow overflow-y-auto p-4 w-full">
         {messages.map((msg, index) => (
-          <div key={index} className="p-2 leading-6 font-medium">
-            <span>{msg.timestamp || ''} [{msg.user}]: </span>
-            <span>{msg.text}</span>
+          <div
+            key={index}
+            className={`p-2 leading-6 font-medium rounded-lg my-2 w-3/4 ${
+              msg.user === 'AI-Therapist'
+                ? 'bg-muted text-left'
+                : 'bg-primary text-white text-right ml-auto'
+            }`}
+            style={{ alignSelf: msg.user === 'AI-Therapist' ? 'flex-start' : 'flex-end' }}
+          >
+            <p className={`text-xs ${msg.user === 'AI-Therapist' 
+              ? 'text-gray-500' 
+              : 'text-muted-foreground'}`}>
+                {msg.timestamp || ''} [{msg.user}]:
+                </p>
+            <p>{msg.text}</p>
           </div>
         ))}
       </div>
       <Textarea
-      className="mt-5"
+        className="mt-5 h-24 resize-none p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         placeholder="I like trains."
         value={message}
         onChange={(e) => setMessage(e.target.value)}
@@ -103,6 +116,8 @@ const ChatCard: React.FC<EntryProps> = ({ entry }) => {
       />
     </div>
   );
+  
+  
 }
 
 export default ChatCard;
