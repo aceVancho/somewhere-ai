@@ -37,7 +37,7 @@ class SocketHandler {
         console.log(`Client joined session: ${sessionId}`);
 
         // If conversation exists, emit a new message with history
-        const history = await this.SessionHandler.getMemory(sessionId)
+        const history = await this.SessionHandler.getMemory(sessionId, email)
         this.io.to(sessionId).emit('history', history);
     }
 

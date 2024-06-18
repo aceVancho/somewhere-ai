@@ -115,15 +115,17 @@ class SessionHandler {
     }
   }
 
-  public async getMemory(sessionId: string) {
+  public async getMemory(sessionId: string, email: string) {
     if (!SessionHandler.zepClient) {
       throw new Error("ZepClient not initialized");
     }
+
+    const username = email.split("@")[0];
     const history = await SessionHandler.zepClient.memory.getMemory(sessionId);
     // TODO: use names over roles
     return history?.messages.map((message) => ({
             text: message.content,
-            user: message.role,
+            user: message.role === 'ai' ? 'AI-Therapist': username,
             timestamp: new Date(message.created_at || '').toLocaleString()
         })
   )}
