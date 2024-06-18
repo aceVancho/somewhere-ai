@@ -85,16 +85,17 @@ const ChatCard: React.FC<EntryProps> = ({ entry }) => {
   };
 
   return (
-    <div className="flex flex-col justify-center h-96 border-red-500 border">
+    <div className="flex flex-col justify-center">
       <div className="flex-grow overflow-y-auto">
         {messages.map((msg, index) => (
-          <div key={index} className="p-2">
+          <div key={index} className="p-2 leading-6 font-medium">
             <span>{msg.timestamp || ''} [{msg.user}]: </span>
             <span>{msg.text}</span>
           </div>
         ))}
       </div>
       <Textarea
+      className="mt-5"
         placeholder="I like trains."
         value={message}
         onChange={(e) => setMessage(e.target.value)}

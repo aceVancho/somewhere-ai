@@ -40,41 +40,30 @@ class SessionHandler {
       console.error("Error initializing ZepClient:", error);
     }
   }
-
-  systemPrompt = `
-  You are an AI tool designed to give users the ability to chat with their journal entries via retrieval augmented generation and cosign similarity queries against a vector database. 
   
-  From now on, act as a therapist. You are emotionally intelligent, a devil's advocate, compassionate, a critical thinker, lax, conversational, lightly humorous, curious, wise, a strategic question asker, thoughtful, and insightful. Your tone should remain conversational and you should fashion our language around how the author has written their own journal entries in order to better speak their language. You will use exerts from their entries to prove your points, provide analysis, and ask follow-up questions. DO NOT USE BULLET POINTS. Direct your tone as if you were speaking from the present (${Date.now()}). Context: {context}
-  `;
-
-  prompt = ChatPromptTemplate.fromMessages([
-    ["system", `${this.systemPrompt}`],
-    ["system", "Context: {context}"],
-    ["system", "Entry text: {entryText}"],
-    ["system", "Current conversation {history}:"],
-    new MessagesPlaceholder("history"),
-    ["human", "{question}"],
-  ]);
-  // TODO: Are we certain this works?
-  // prompt = ChatPromptTemplate.fromMessages([
-  //   ["system", `${this.systemPrompt}: {context}`],
-  //   new MessagesPlaceholder("context"),
-  //   ["system", `Entry text: {entryText}`],
-  //   new MessagesPlaceholder("entryText"),
-  //   ["system", "Current conversation {history}:"],
-  //   new MessagesPlaceholder("history"),
-  //   ["human", "{question}"],
-  // ]);
-
   buildChain = (sessionId: string) => {
     const llm = new ChatOpenAI({
       temperature: 0.4,
       modelName: process.env.OPEN_AI_CHAT_MODEL,
     })
     // .bind({ tools });
-
     // const llmWithTools = llm.bind({ tools })
-    const chain = this.prompt.pipe(llm);
+
+    const systemPrompt = `You are helping Adam write an AI-powered online journal program and test prompts. Answer his questions. 
+    `;
+    // You are an AI tool designed to give users the ability to chat with their journal entries via retrieval augmented generation and cosign similarity queries against a vector database. 
+
+    // From now on, act as a therapist. You are emotionally intelligent, a devil's advocate, compassionate, a critical thinker, lax, conversational, lightly humorous, curious, wise, a strategic question asker, thoughtful, and insightful. Your tone should remain conversational and you should fashion our language around how the author has written their own journal entries in order to better speak their language. You will use exerts from their entries to prove your points, provide analysis, and ask follow-up questions. DO NOT USE BULLET POINTS. Direct your tone as if you were speaking from the present (${Date.now()}). 
+    
+    const promptTemplate = ChatPromptTemplate.fromMessages([
+      ["system", `${systemPrompt}`],
+      ["system", "Original entry text: {entryText}"],
+      ["system", "Context from past entries (vector DB matches): {context}"],
+      new MessagesPlaceholder('context'),
+      ["human", "{question}"],
+    ]);
+
+    const chain = promptTemplate.pipe(llm);
 
     const chainWithHistory = new RunnableWithMessageHistory({
       runnable: chain,
@@ -148,7 +137,7 @@ class SessionHandler {
     const pineconeResponse = await pineconeQuery(message, sessionMessages, mergedMetadata)
     const context = pineconeResponse.map((match) => {
         return new SystemMessage({ 
-            content: match?.metadata?.text as string,
+            content: match?.metadata?.content as string || '',
             response_metadata: {}
         })
     });

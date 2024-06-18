@@ -77,7 +77,6 @@ export const pineconeQuery = async (
     includeMetadata: true,
   });
 
-  console.log('I ran 2', pineconeQueryResponse)
-  pineconeQueryResponse.matches.map((match) => console.log(match, '\n'))
+  // pineconeQueryResponse.matches.map((match) => console.log(match, '\n'))
   return pineconeQueryResponse.matches;
 };
