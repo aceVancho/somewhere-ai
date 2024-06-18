@@ -60,6 +60,8 @@ class SessionHandler {
       ["system", "Original entry text: {entryText}"],
       ["system", "Context from past entries (vector DB matches): {context}"],
       new MessagesPlaceholder('context'),
+      ["system", "Conversation history: {history}"],
+      new MessagesPlaceholder('history'),
       ["human", "{question}"],
     ]);
 
