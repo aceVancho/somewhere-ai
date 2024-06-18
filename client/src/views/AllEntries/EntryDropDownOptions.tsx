@@ -25,6 +25,7 @@ const EntryDropDownOptions: React.FC<EntryDropDownOptionsProps> = ({ entry }) =>
   };
 
   const { toast } = useToast();
+  // TODO: Sometimes this fails, it also doesn't rerender.
   const handleDelete = async (entryId: string) => {
     try {
       const response = await fetch(

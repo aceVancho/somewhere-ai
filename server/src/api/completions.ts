@@ -2,9 +2,11 @@
 
 import OpenAI from "openai";
 import dotenv from 'dotenv';
+import path from "path";
 import { prompts } from './prompts';
 
-dotenv.config();
+dotenv.config({ path: path.resolve("../.env") });
+
 
 const openai = new OpenAI();
 const model = process.env.OPEN_AI_CHAT_MODEL!;
@@ -77,13 +79,14 @@ const generateTitle = async (text: string): Promise<string> => {
     });
 
     const response = completion?.choices[0]?.message?.content;
-
+    
     if (!response) {
       throw new Error('OpenAI API returned an empty response');
     }
-
+    
     return JSON.parse(response).title;
   } catch (error) {
+
     console.error('Error generating title:', error);
     throw new Error('Failed to generate title');
   }

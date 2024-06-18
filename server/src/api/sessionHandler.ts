@@ -3,7 +3,7 @@ import { ChatOpenAI } from "@langchain/openai";
 import dotenv from "dotenv";
 import { v4 as uuidv4 } from "uuid";
 import { SystemMessage } from "@langchain/core/messages";
-import { Session, ZepClient } from "@getzep/zep-js";
+import { Session, ZepClient, Message } from "@getzep/zep-js";
 import { ZepChatMessageHistory } from "@getzep/zep-js/langchain";
 import {
   ChatPromptTemplate,
@@ -12,6 +12,7 @@ import {
 import { RunnableWithMessageHistory } from "@langchain/core/runnables";
 import { handleToolCalls, tools } from "./tools";
 import readline from "readline";
+import { pineconeQuery } from "./query";
 
 
 class SessionHandler {
@@ -41,19 +42,29 @@ class SessionHandler {
   }
 
   systemPrompt = `
-    You are a tool designed for an online ai-powered journal. One of its defining features is to allow users to chat with their journal. This is accomplished via retrieval augmented generation and AI. A user will input text and this text along with the current conversation history will be passed to function designed to query a vector database using cosign similarity. The below context is the result of this combined input and conversation history query. Your role is to use this context to address the needs, questions, or concerns of the user. 
-
-    From now on, act as a therapist. You are emotionally intelligent, a devil's advocate, compassionate, a critical thinker, lax, conversational, lightly humorous, curious, wise, a strategic question asker, thoughtful, and insightful. Your tone should remain conversational and you should fashion our language around how the author has written their own journal entries in order to better speak their language. You will use exerts from their entries to prove your points, provide analysis, and ask follow-up questions. DO NOT USE BULLET POINTS. Direct your tone as if you were speaking from the present (${Date.now()}).
-    `;
+  You are an AI tool designed to give users the ability to chat with their journal entries via retrieval augmented generation and cosign similarity queries against a vector database. 
+  
+  From now on, act as a therapist. You are emotionally intelligent, a devil's advocate, compassionate, a critical thinker, lax, conversational, lightly humorous, curious, wise, a strategic question asker, thoughtful, and insightful. Your tone should remain conversational and you should fashion our language around how the author has written their own journal entries in order to better speak their language. You will use exerts from their entries to prove your points, provide analysis, and ask follow-up questions. DO NOT USE BULLET POINTS. Direct your tone as if you were speaking from the present (${Date.now()}). Context: {context}
+  `;
 
   prompt = ChatPromptTemplate.fromMessages([
     ["system", `${this.systemPrompt}`],
-    // ["system", `${this.systemPrompt}: {additionalContext}`],
-    // new MessagesPlaceholder("additionalContext"),
+    ["system", "Context: {context}"],
+    ["system", "Entry text: {entryText}"],
     ["system", "Current conversation {history}:"],
     new MessagesPlaceholder("history"),
     ["human", "{question}"],
   ]);
+  // TODO: Are we certain this works?
+  // prompt = ChatPromptTemplate.fromMessages([
+  //   ["system", `${this.systemPrompt}: {context}`],
+  //   new MessagesPlaceholder("context"),
+  //   ["system", `Entry text: {entryText}`],
+  //   new MessagesPlaceholder("entryText"),
+  //   ["system", "Current conversation {history}:"],
+  //   new MessagesPlaceholder("history"),
+  //   ["human", "{question}"],
+  // ]);
 
   buildChain = (sessionId: string) => {
     const llm = new ChatOpenAI({
@@ -80,10 +91,25 @@ class SessionHandler {
     return chainWithHistory;
   };
 
-  public createChain(sessionId: string): RunnableWithMessageHistory<any, any> {
-    const chain = this.buildChain(sessionId);
-    this.sessionChains.set(sessionId, chain);
-    return chain;
+  public async createChain(entry: IEntry): Promise<RunnableWithMessageHistory<any, any>> {
+    const { id: sessionId, user, tags, title, text } = entry;
+
+    try {
+      // Attempt to retrieve the session
+      await SessionHandler.zepClient!.memory.getSession(sessionId);
+  } catch (error) {
+      // If session does not exist, create a new one
+      await SessionHandler.zepClient!.memory.addSession(new Session({ 
+          session_id: sessionId,
+          user_id: user.toString(),
+          metadata: { title, tags, text } || {} 
+      }));
+  } finally {
+      // Build the chain regardless of whether the session exists or is newly created
+      const chain = this.buildChain(sessionId);
+      this.sessionChains.set(sessionId, chain);
+      return chain;
+  }
   }
 
   public getChain(sessionId: string): RunnableWithMessageHistory<any, any> | undefined {
@@ -110,6 +136,33 @@ class SessionHandler {
             timestamp: new Date(message.created_at || '').toLocaleString()
         })
   )}
+
+  public async chat(sessionId: string, message: string) {
+    const chain = this.getChain(sessionId)
+    const session = await SessionHandler.zepClient?.memory.getSession(sessionId);
+    
+    if (!session || !session.metadata) throw new Error('No session or session metadata found.')
+    const sessionMessages = (await SessionHandler.zepClient?.message.getSessionMessages(sessionId))
+      ?.filter((message): message is Message => message === undefined) || [];
+    const mergedMetadata = { ...session.metadata, userId: session.user_id };
+    const pineconeResponse = await pineconeQuery(message, sessionMessages, mergedMetadata)
+    const context = pineconeResponse.map((match) => {
+        return new SystemMessage({ 
+            content: match?.metadata?.text as string,
+            response_metadata: {}
+        })
+    });
+
+    const options = { configurable: { sessionId } };
+    const input = { question: message, context, entryText: session.metadata.text }
+    const response = await chain?.invoke(input, options)
+
+    return {
+      text: response?.content,
+      timestamp: new Date().toLocaleString(),
+      user: 'AI-Therapist'
+    }
+  }
 }
 dotenv.config({ path: path.resolve("../.env") });
 export default SessionHandler.getInstance(process.env.ZEP_API_KEY!);

@@ -28,10 +28,12 @@ class SocketHandler {
         socket.on('disconnect', this.handleDisconnect.bind(this, socket));
     }
 
-    private async handleJoinSession(socket: Socket, data: { sessionId: string }) {
-        const { sessionId } = data;
+    private async handleJoinSession(socket: Socket, data: { sessionId: string, email: string }) {
+        const { sessionId, email } = data;
         socket.join(sessionId);
         socket.data.sessionId = sessionId;
+        const entry = await Entry.findById(sessionId)
+        void this.SessionHandler.createChain(entry!);
         console.log(`Client joined session: ${sessionId}`);
 
         // If conversation exists, emit a new message with history
@@ -41,19 +43,10 @@ class SocketHandler {
 
     private async handleMessage(socket: Socket, data: { sessionId: string, message: string }) {
         const { sessionId, message } = data;
-        const chain = this.SessionHandler.getChain(sessionId)
 
         try {
-            // TODO: put invoke/options logic in SessionHandler
-            const options = { configurable: { sessionId } };
-            const input = { question: message }
-            const response = await chain?.invoke(input, options)
-
-            this.io.to(sessionId).emit('message', {
-                text: response?.content,
-                timestamp: new Date().toLocaleString(),
-                user: 'AI-Therapist'
-            });
+            const payload = await this.SessionHandler.chat(sessionId, message)
+            this.io.to(sessionId).emit('message', payload);
         } catch (error: unknown) {
             console.error(error);
             const message = (error as Error)?.message || 'An unknown error occurred.';
