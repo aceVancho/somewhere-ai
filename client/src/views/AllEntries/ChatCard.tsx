@@ -9,13 +9,7 @@ interface Message {
   user: string;
 }
 
-interface EntryProps {
-  entry: {
-    _id: string;
-  };
-}
-
-const ChatCard: React.FC<EntryProps> = ({ entry }) => {
+const ChatCard: React.FC<EntryProps> = ({entry}) => {
   const { user } = useAuth();
   const [message, setMessage] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -86,34 +80,39 @@ const ChatCard: React.FC<EntryProps> = ({ entry }) => {
   
 
   return (
-    <div className="flex flex-col h-full justify-center w-full">
-      <div className="flex-grow overflow-y-auto p-4 w-full">
+    <div className="flex flex-col h-full justify-center items-center w-full whitespace-pre-wrap antialiased">
+      <div className=" p-4 w-3/4">
         {messages.map((msg, index) => (
           <div
             key={index}
-            className={`p-2 leading-6 font-medium rounded-lg my-2 w-3/4 ${
+            className={`p-4 flex rounded-lg my-2 shadow-md w-3/4 ${
               msg.user === 'AI-Therapist'
-                ? 'bg-muted text-left'
-                : 'bg-primary text-white text-right ml-auto'
+                ? 'bg-muted text-left justify-start'
+                : 'bg-primary text-white text-right ml-auto justify-end'
             }`}
             style={{ alignSelf: msg.user === 'AI-Therapist' ? 'flex-start' : 'flex-end' }}
           >
-            <p className={`text-xs ${msg.user === 'AI-Therapist' 
-              ? 'text-gray-500' 
-              : 'text-muted-foreground'}`}>
-                {msg.timestamp || ''} [{msg.user}]:
-                </p>
-            <p>{msg.text}</p>
+            <div className="flex flex-col">
+              <p className={`text-sm mb-1 font-semibold ${msg.user === 'AI-Therapist' 
+                ? 'text-muted-foreground' 
+                : 'text-muted-background'}`}>
+                  {msg.timestamp || ''} [{msg.user}]:
+                  </p>
+              <p className="text-sm font-medium leading-7">{msg.text}</p>
+
+            </div>
           </div>
         ))}
       </div>
-      <Textarea
-        className="mt-5 h-24 resize-none p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-        placeholder="I like trains."
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        onKeyDown={handleSubmit}
-      />
+      <div className="w-full p-5">
+        <Textarea
+          className="mt-5 h-24 resize-none border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          placeholder="I like trains."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={handleSubmit}
+        />
+      </div>
     </div>
   );
   

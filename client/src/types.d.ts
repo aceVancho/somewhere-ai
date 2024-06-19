@@ -13,8 +13,7 @@ declare global {
       signUp: (user: IUser) => Promise<void>;
       loading: boolean;
   }
-  interface EntryProps {
-    entry: {
+  interface IEntry {
       _id: string;
       title: string;
       text: string;
@@ -22,12 +21,21 @@ declare global {
       analysis: string;
       sentiment: number;
       goals: string[];
-      encouragements: string[];
       questions: string[];
       createdAt: Date;
       updatedAt: Date;
-    };
+  }
+  interface EntryProps {
+    entry: IEntry
+  }
+
+  interface IEntryContextType {
+    entries: IEntry[];
+    setEntry: (entry: IEntry) => void;
+    setEntries: (entries: IEntry[]) => void;
+    removeEntry: (entryId: string) => void;
+    removeEntries: (entryIds: string[]) => void;
   }
 }
 
-export { EntryProps, IUser, IAuthContextType }
+export { IEntry, IUser, IAuthContextType }

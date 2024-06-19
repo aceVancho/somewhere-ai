@@ -10,7 +10,7 @@ import EntryTab from "./EntryTab";
 import AnalysisTab from "./AnalysisTab";
 import ChatTab from "./ChatTab";
 
-const Entry: React.FC<EntryProps> = ({ entry }) => {
+const Entry: React.FC<EntryProps> = ({entry}) => {
   return (
     <AccordionItem value={entry._id} className="my-4 border rounded-md shadow-md">
       <EntryHeader entry={entry} />

@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Accordion } from "@/components/ui/accordion";
 import Entry from "./Entry";
+import { useEntryContext } from "../../contexts/entryContext";
 
-interface Entry {
+interface IEntry {
   _id: string;
   title: string;
   text: string;
@@ -18,7 +19,7 @@ interface Entry {
 }
 
 const AllEntries: React.FC = () => {
-  const [entries, setEntries] = useState<Entry[]>([]);
+  const { entries, setEntries } = useEntryContext();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,7 +48,7 @@ const AllEntries: React.FC = () => {
     };
 
     fetchEntries();
-  }, []);
+  }, [setEntries]);
 
   if (loading) {
     return (

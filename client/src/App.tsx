@@ -4,6 +4,7 @@ import { AuthProvider } from './contexts/authContext';
 import { ThemeProvider } from "./contexts/ThemeProvider"
 import { Toaster } from "@/components/ui/toaster"
 import Main from './components/Main';
+import { EntryProvider } from './contexts/entryContext';
 
 const App: React.FC = () => { 
   return (
@@ -11,10 +12,12 @@ const App: React.FC = () => {
               <AuthProvider>
                   <BrowserRouter>
                       <Toaster />
-                        <Routes>
-                          <Route path="/" element={<Main />} />
-                          <Route path="*" element={<Navigate to="/" replace />} />
-                        </Routes>
+                          <EntryProvider>
+                            <Routes>
+                              <Route path="/" element={<Main />} />
+                              <Route path="*" element={<Navigate to="/" replace />} />
+                            </Routes>
+                          </EntryProvider>
                   </BrowserRouter>
               </AuthProvider>
           </ThemeProvider>

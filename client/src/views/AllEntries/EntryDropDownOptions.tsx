@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Edit, Ellipsis, Trash2 } from "lucide-react";
+import { useEntryContext } from "@/contexts/entryContext";
 
 interface EntryDropDownOptionsProps {
   entry: {
@@ -25,8 +26,9 @@ const EntryDropDownOptions: React.FC<EntryDropDownOptionsProps> = ({ entry }) =>
   };
 
   const { toast } = useToast();
+  const { removeEntry } = useEntryContext();
   // TODO: Sometimes this fails, it also doesn't rerender.
-  const handleDelete = async (entryId: string) => {
+  const handleDelete = async (event: React.MouseEvent, entryId: string) => {
     try {
       const response = await fetch(
         `http://localhost:4001/api/entries/${entryId}`,
@@ -41,6 +43,7 @@ const EntryDropDownOptions: React.FC<EntryDropDownOptionsProps> = ({ entry }) =>
         }
       );
       if (response.ok) {
+        removeEntry(entryId);
         toast({
           title: "Entry deleted",
           description: `Your entry has been deleted successfully.`,
@@ -83,7 +86,7 @@ const EntryDropDownOptions: React.FC<EntryDropDownOptionsProps> = ({ entry }) =>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => handleDelete(entry._id)}>
+            <AlertDialogAction onClick={(event) => handleDelete(event, entry._id)}>
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
