@@ -288,7 +288,7 @@ const NavPanel: React.FC = () => {
   }
 
   return (
-    <div className="w-full lg:w-3/12 flex flex-col p-4 border-r">
+    <div className="w-full lg:w-2/12 flex flex-col p-4 border-r">
       <MobileNav />
       <DesktopNav />
     </div>
