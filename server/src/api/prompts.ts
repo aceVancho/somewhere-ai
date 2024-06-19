@@ -37,9 +37,6 @@ export const prompts = {
   generateGoals: `
     Based on the following entry, suggest some goals the user might set. The response should be in the following JSON format: { "goals": ["goal1", "goal2"] }
   `,
-  generateEncouragements: `
-    Based on the following entry, provide some encouragements for the user. The response should be in the following JSON format: { "encouragements": ["encouragement1", "encouragement2"] }
-  `,
   generateQuestions: `
     Based on the following entry, generate some reflective questions for the user. The response should be in the following JSON format: { "questions": ["question1", "question2"] }
   `,

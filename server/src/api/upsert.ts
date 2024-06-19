@@ -15,19 +15,13 @@ const createChunks = async ({ userId, entryId, text, date }: UpsertProps): Promi
   const splitTextArray = await textSplitter.splitText(text);
 
   return splitTextArray.map((text, index) => ({
-    id: uuidv4(),
-    content: text,
-    parentEntryId: entryId,
-    userId,
-    createdDate: date,
-    chunkNumber: index + 1,
+    id: `${entryId}#chunk-${index+1}`,
     metadata: {
-      id: uuidv4(),
       content: text,
       parentEntryId: entryId,
       userId,
       createdDate: date,
-      chunkNumber: index + 1,
+      chunkNumber: index+1,
     },
   }));
 };
@@ -46,7 +40,7 @@ const createEmbeddings = async (entryChunks: EntryChunk[]): Promise<PineconeReco
         embeddingObj = await openai.embeddings.create({
           model: process.env.OPEN_AI_EMBEDDING_MODEL!,
           encoding_format: 'float',
-          input: chunk.content,
+          input: chunk.metadata.content,
         });
         finished = true;
         console.log(`Created embedding for chunk ${index + 1}/${entryChunks.length}`);

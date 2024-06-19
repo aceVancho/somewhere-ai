@@ -7,7 +7,6 @@ const EntrySchema: Schema = new Schema({
   analysis: { type: String, default: '' },
   sentiment: { type: Number, default: 0 },
   goals: { type: [String], default: [] },
-  encouragements: { type: [String], default: [] },
   questions: { type: [String], default: [] },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   createdAt: { type: Date, default: Date.now },

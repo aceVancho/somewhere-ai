@@ -12,7 +12,6 @@ interface IEntry {
   analysis: string;
   sentiment: number;
   goals: string[];
-  encouragements: string[];
   questions: string[];
   createdAt: Date;
   updatedAt: Date;

@@ -1,8 +1,12 @@
 import OpenAI from "openai";
 import dotenv from 'dotenv';
 import { prompts } from "../src/api/prompts";
+import { Pinecone, PineconeRecord, RecordMetadata } from '@pinecone-database/pinecone';
+import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
+import { v4 as uuidv4 } from 'uuid';
+import path from "path";
 
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 const openai = new OpenAI();
 const model = process.env.OPEN_AI_CHAT_MODEL;
@@ -56,4 +60,23 @@ const generateAnalysis = async () => {
     }
   };
 
-  generateAnalysis();
+  const testDeleteRecordsByMetadata = async () => {
+    console.log(process.env.PINECONE_INDEX!, process.env.PINECONE_API_KEY!) 
+    const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
+    const index = pc.index(process.env.PINECONE_INDEX!);
+
+    const results = await index.namespace('666092508bc80a74e7c0b9a0')
+    .listPaginated({ prefix: '66734085ef5ec16f2e1fec7d' });
+    
+    const vectorIds = results.vectors?.map((vector) => vector.id).filter((v): v is string => v !== undefined);
+
+    console.log(vectorIds)
+
+    if (vectorIds && vectorIds.length > 0) {
+      await index.namespace('666092508bc80a74e7c0b9a0').deleteMany(vectorIds);
+    };
+  }
+  //
+  testDeleteRecordsByMetadata()
+  // generateAnalysis();
+

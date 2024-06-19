@@ -191,31 +191,6 @@ const generateGoals = async (text: string): Promise<string[]> => {
   }
 };
 
-const generateEncouragements = async (text: string): Promise<string[]> => {
-  try {
-    const completion = await openai.chat.completions.create({
-      messages: [
-        { role: "system", content: prompts.generateEncouragements },
-        { role: "user", content: `Entry: ${text}` },
-      ],
-      model,
-      temperature: 0.8,
-      response_format: {'type': 'json_object'}
-    });
-
-    const response = completion?.choices[0]?.message?.content;
-
-    if (!response) {
-      throw new Error('OpenAI API returned an empty response');
-    }
-
-    return JSON.parse(response).encouragements;
-  } catch (error) {
-    console.error('Error generating encouragements:', error);
-    throw new Error('Failed to generate encouragements');
-  }
-};
-
 const generateQuestions = async (text: string): Promise<string[]> => {
   try {
     const completion = await openai.chat.completions.create({
@@ -245,7 +220,7 @@ interface MetadataOptions {
   title: string
 }
 
-export const createEntryMetadata = async (entry: IEntry, options: MetadataOptions): Promise<{ title: string; tags: string[]; analysis: string; sentiment: number; goals: string[]; encouragements: string[]; questions: string[] }> => {
+export const createEntryMetadata = async (entry: IEntry, options: MetadataOptions): Promise<{ title: string; tags: string[]; analysis: string; sentiment: number; goals: string[]; questions: string[] }> => {
   try {
     const title = options.title ? options.title : await generateTitle(entry.text);
     const tags = await generateTags(entry.text);
@@ -255,10 +230,9 @@ export const createEntryMetadata = async (entry: IEntry, options: MetadataOption
     const sentiments = await Promise.all(sentimentPromises);
     const overallSentiment = aggregateSentiments(sentiments);
     const goals = await generateGoals(entry.text);
-    const encouragements = await generateEncouragements(entry.text);
     const questions = await generateQuestions(entry.text);
 
-    return { title, tags, analysis, sentiment: overallSentiment, goals, encouragements, questions };
+    return { title, tags, analysis, sentiment: overallSentiment, goals, questions };
   } catch (error) {
     console.error('Error during OpenAI API call:', error);
     throw new Error('Failed to create entry metadata');
