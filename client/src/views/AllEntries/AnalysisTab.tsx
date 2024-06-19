@@ -30,8 +30,8 @@ const AnalysisTab: React.FC<AnalysisTabProps> = ({ entry }) => (
       </div>
     </section>
     <AnalysisCard entry={entry} />
-    <GoalsCard entry={entry} />
     <QuestionsCard entry={entry} />
+    <GoalsCard entry={entry} />
   </TabsContent>
 );
 

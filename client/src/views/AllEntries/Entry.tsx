@@ -18,7 +18,7 @@ const Entry: React.FC<EntryProps> = ({entry}) => {
         <Separator className="mb-5" />
         <Tabs defaultValue="Entry" className="w-full mt-2">
           <div className="flex justify-center">
-            <TabsList className="grid w-1/2 grid-cols-3">
+            <TabsList className="grid w-1/2 grid-cols-3 gap-1">
               <TabsTrigger value="Entry">Entry</TabsTrigger>
               <TabsTrigger value="Analysis">Analysis</TabsTrigger>
               <TabsTrigger value="Chat">Chat</TabsTrigger>
