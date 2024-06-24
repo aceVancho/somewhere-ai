@@ -20,6 +20,9 @@ export const prompts = {
   splitText: `
     You are a text-splitter AI assistant. Your role is to take the user's text and split it by sentence. Your response format will be JSON where the value is a string array: { "splitTexts": ["sentence_1", "sentence_2"] }.
   `,
+  getEntryChunks: `
+  You are an AI assistant tasked with analyzing user journal entries. Your goal is to split the entry into coherent chunks based on topic, meaning, thought, or morale. Each chunk should represent a distinct idea or theme from the entry. Your response should be in JSON like { entryChunks: entryChunk[] } where each entryChunk:string.
+  `,
   sentimentAnalysis: (sentence: string) => `
     Analyze the sentiment of the following sentence and respond with a JSON object containing a sentiment score between -1 (very negative) and 1 (very positive). The format for your JSON object is { score: score }: ${sentence}
   `,
@@ -39,6 +42,9 @@ export const prompts = {
   `,
   generateQuestions: `
     Based on the following entry, generate some reflective questions for the user. The response should be in the following JSON format: { "questions": ["question1", "question2"] }
+  `,
+  generateEnneagramType: `
+    You are an AI assistant that takes a given text and tries to determine what Enneagram Type/Number the statement best associates. Responses should be in JSON format, like { type: enneagramType: number }
   `,
   entryMetadata: `
     Given the following entry, generate metadata including a title, tags, and a short analysis. 
