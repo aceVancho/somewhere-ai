@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "test": "ts-node test/index.test.ts",
+    "test": "jest",
     "dev": "nodemon src/index.ts"
   },
   "keywords": [],
@@ -36,6 +36,7 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/date-fns": "^2.6.0",
     "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.12",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20.11.16",
     "@types/sanitize-html": "^2.11.0",
@@ -43,8 +44,10 @@
     "@types/xml2js": "^0.4.14",
     "axios": "^1.6.7",
     "bcryptjs": "^2.4.3",
+    "jest": "^29.7.0",
     "openai": "^4.47.1",
     "socket.io": "^4.7.5",
+    "ts-jest": "^29.1.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   }
