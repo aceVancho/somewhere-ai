@@ -13,7 +13,6 @@ dist-ssr
 *.local
 .env
 server/config
-server/test
 
 # Editor directories and files
 .vscode/*

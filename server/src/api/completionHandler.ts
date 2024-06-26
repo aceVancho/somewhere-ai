@@ -33,34 +33,72 @@ class CompletionHandler {
       return CompletionHandler.instance;
     }
 
-    public static async getTitle(text: string) {
+    public async getTitle(text: string) {
       const llm = new ChatOpenAI({
         modelName: CompletionHandler.model,
-        temperature: 0.5,
+        temperature: 1.2,
+        maxTokens: 4095,
+        topP: 1,
+        frequencyPenalty: 0.5,
+        presencePenalty: 0.5,
       })
 
       const parser = StructuredOutputParser.fromZodSchema(
         z.object({ title: z.string() })
       )
 
-      const systemInstruction = `
+      const systemMessage = `
         You are an AI assistant that, given a user's journal entry, returns a clever, descriptive title.
         Responses must be in JSON format. {format_instructions}
       `
 
       const prompt = ChatPromptTemplate.fromMessages([
-        ['system', systemInstruction],
+        ['system', systemMessage],
         ['user', text]
       ])
 
-      const invokeOptions = {
-        format_instructions: parser.getFormatInstructions(),
-      }
-
+      const options = { format_instructions: parser.getFormatInstructions() }
       const chain = prompt.pipe(llm).pipe(parser);
 
       try {
-        return await chain.invoke(invokeOptions)
+        return await chain.invoke(options)
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    public async getQuestions(text: string) {
+      const llm = new ChatOpenAI({
+        modelName: CompletionHandler.model,
+        temperature: 1.2,
+        maxTokens: 4095,
+        topP: 1,
+        frequencyPenalty: 0.5,
+        presencePenalty: 0.5,
+      })
+
+      const parser = StructuredOutputParser.fromZodSchema(
+        z.object({ questions: z.array(z.string()) })
+      )
+
+      const systemMessage = `  
+      Based off the given user entry, suggest some thought-provoking questions the user could use to dive deeper into themselves. 
+        - Questions should be highly specific, referencing notable excerpts from the text. 
+        - Questions can also be asked from the persona of a "devil's advocate" — suggesting counterpoints and alternative perspectives that challenge what the user wrote.
+      Further instructions: Max 5 Questions. 
+      Responses must be in JSON format. {format_instructions}
+      `
+
+      const prompt = ChatPromptTemplate.fromMessages([
+        ['system', systemMessage],
+        ['user', text]
+      ])
+
+      const options = { format_instructions: parser.getFormatInstructions() }
+      const chain = prompt.pipe(llm).pipe(parser);
+
+      try {
+        return await chain.invoke(options)
       } catch (error) {
         console.error(error)
       }
