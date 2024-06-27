@@ -174,7 +174,14 @@ class SessionHandler {
 
     return {
       text: response?.content,
-      timestamp: new Date().toLocaleString(),
+      timestamp: new Date().toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true,
+      }),
       user: 'AI-Therapist'
     }
   }

@@ -3,52 +3,64 @@ import { Textarea } from "@/components/ui/textarea";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "@/contexts/authContext";
 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
 interface Message {
   text: string;
   timestamp: string;
   user: string;
 }
 
-const ChatCard: React.FC<EntryProps> = ({entry}) => {
+const ChatCard: React.FC<EntryProps> = ({ entry }) => {
   const { user } = useAuth();
   const [message, setMessage] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const newSocket = io('http://localhost:4001', {
+    const newSocket = io("http://localhost:4001", {
       auth: {
-        token: localStorage.getItem('somewhereAIToken'),
+        token: localStorage.getItem("somewhereAIToken"),
       },
     });
     setSocket(newSocket);
 
-    newSocket.on('connect', () => {
-      console.log('Socket connected to meGPT Server');
-      newSocket.emit('joinSession', {
-        sessionId: entry._id, 
-        email: user?.email
+    newSocket.on("connect", () => {
+      console.log("Socket connected to meGPT Server");
+      newSocket.emit("joinSession", {
+        sessionId: entry._id,
+        email: user?.email,
       });
     });
 
-    newSocket.on('disconnect', () => {
-      console.log('Socket disconnected from meGPT server');
+    newSocket.on("disconnect", () => {
+      console.log("Socket disconnected from meGPT server");
     });
 
     // Listen for new messages
-    newSocket.on('message', (msg: { text: string; timestamp: string; user: string }) => {
-      console.log(msg);
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { text: msg.text, timestamp: msg.timestamp, user: msg.user }
-      ]);
+    newSocket.on(
+      "message",
+      (msg: { text: string; timestamp: string; user: string }) => {
+        console.log(msg);
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { text: msg.text, timestamp: msg.timestamp, user: msg.user },
+        ]);
+      }
+    );
+
+    newSocket.on("history", (history) => {
+      setMessages(history);
     });
 
-    newSocket.on('history', (history) => {
-      setMessages(history)
-    });
-
-    newSocket.on('error', (error) => {
+    newSocket.on("error", (error) => {
       // TODO: properly handle
       console.error(error);
     });
@@ -59,16 +71,16 @@ const ChatCard: React.FC<EntryProps> = ({entry}) => {
   }, [entry._id, user?.email]);
 
   const handleSubmit = (e: React.KeyboardEvent) => {
-    if (e.code === 'Enter' && !e.shiftKey) {
+    if (e.code === "Enter" && !e.shiftKey) {
       e.preventDefault();
       if (message.trim() && socket) {
         const newMessage: Message = {
           text: message,
           timestamp: new Date().toLocaleString(),
-          user: user?.email || 'Anonymous'
+          user: user?.email || "Anonymous",
         };
         setMessages((prevMessages) => [...prevMessages, newMessage]);
-        socket.emit('message', {
+        socket.emit("message", {
           sessionId: entry._id,
           token: localStorage.getItem("somewhereAIToken"),
           message: message,
@@ -77,31 +89,36 @@ const ChatCard: React.FC<EntryProps> = ({entry}) => {
       }
     }
   };
-  
+
+  interface MessageCardProps {
+    msg: Message;
+  }
+
+  const MessageCard: React.FC<MessageCardProps> = ({ msg }) => {
+    const [date, time] = msg.timestamp.split(',')
+    return (
+      <Card className={
+        `m-2 w-3/4 
+        ${msg.user === 'AI-Therapist' 
+        ? 'self-start bg-muted text-left animate__animated animate__fadeInLeft' 
+        : 'self-end bg-primary text-right animate__animated animate__fadeInRight'
+        }`}>
+        <CardHeader>
+          <CardTitle >{date} | {time} | {msg.user}</CardTitle>
+          {/* <CardDescription>{msg.user}</CardDescription> */}
+        </CardHeader>
+        <CardContent>
+          <p>{msg.text}</p>
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div className="flex flex-col h-full justify-center items-center w-full whitespace-pre-wrap antialiased">
-      <div className=" p-4 w-3/4">
+      <div className="flex flex-col">
         {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`p-4 flex rounded-lg my-2 shadow-md w-3/4 ${
-              msg.user === 'AI-Therapist'
-                ? 'bg-muted text-left justify-start'
-                : 'bg-primary text-white text-right ml-auto justify-end'
-            }`}
-            style={{ alignSelf: msg.user === 'AI-Therapist' ? 'flex-start' : 'flex-end' }}
-          >
-            <div className="flex flex-col">
-              <p className={`text-sm mb-1 font-semibold ${msg.user === 'AI-Therapist' 
-                ? 'text-muted-foreground' 
-                : 'text-muted-background'}`}>
-                  {msg.timestamp || ''} [{msg.user}]:
-                  </p>
-              <p className="text-sm font-medium leading-7">{msg.text}</p>
-
-            </div>
-          </div>
+          <MessageCard key={index} msg={msg} />
         ))}
       </div>
       <div className="w-full p-5">
@@ -115,8 +132,6 @@ const ChatCard: React.FC<EntryProps> = ({entry}) => {
       </div>
     </div>
   );
-  
-  
-}
+};
 
 export default ChatCard;
