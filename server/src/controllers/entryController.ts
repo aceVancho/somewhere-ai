@@ -131,8 +131,8 @@ export const createEntry = async (req: Request, res: Response): Promise<void> =>
     const date = new Date().toLocaleString();
 
     const newEntry = new Entry({ text, user: userId });
-    
-    await upsert({ userId, entryId: newEntry._id.toString(), text, date });
+
+    await upsert({ userId, entryId: newEntry.id, text, date });
 
     const metadata = await createEntryMetadata(newEntry, { title });
 

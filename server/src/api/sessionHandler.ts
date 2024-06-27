@@ -1,7 +1,6 @@
 import path from "path";
 import { ChatOpenAI } from "@langchain/openai";
 import dotenv from "dotenv";
-import { v4 as uuidv4 } from "uuid";
 import { SystemMessage } from "@langchain/core/messages";
 import { Session, ZepClient, Message } from "@getzep/zep-js";
 import { ZepChatMessageHistory } from "@getzep/zep-js/langchain";
@@ -10,8 +9,7 @@ import {
   MessagesPlaceholder,
 } from "@langchain/core/prompts";
 import { RunnableWithMessageHistory } from "@langchain/core/runnables";
-import { handleToolCalls, tools } from "./tools";
-import readline from "readline";
+import { ObjectId } from 'mongodb';
 import { pineconeQuery } from "./query";
 
 
@@ -82,19 +80,43 @@ class SessionHandler {
     return chainWithHistory;
   };
 
+  public async createUser(email: string, entry: IEntry) {
+    try {
+      const userId = entry.user.toString();
+  
+      try {
+        await SessionHandler.zepClient!.user.add({
+          user_id: userId,
+          email,
+        });
+        console.log(`New Zep user created: ${email}`);
+      } catch (error: any) {
+        console.log(`User ${email} already exists.`)
+      }
+    } catch (error) {
+      console.error('Error creating user:', error);
+    }
+  }
+  
   public async createChain(entry: IEntry): Promise<RunnableWithMessageHistory<any, any>> {
     const { id: sessionId, user, tags, title, text } = entry;
 
     try {
       // Attempt to retrieve the session
       await SessionHandler.zepClient!.memory.getSession(sessionId);
+      console.log('Fetching existing session...')
   } catch (error) {
+      console.error('No session exists. Adding new session...')
       // If session does not exist, create a new one
-      await SessionHandler.zepClient!.memory.addSession(new Session({ 
+      try {
+        await SessionHandler.zepClient!.memory.addSession(new Session({ 
           session_id: sessionId,
           user_id: user.toString(),
           metadata: { title, tags, text } || {} 
       }));
+      } catch (error) {
+        console.log('Failed to add a new session.', error)
+      }
   } finally {
       // Build the chain regardless of whether the session exists or is newly created
       const chain = this.buildChain(sessionId);
@@ -122,7 +144,7 @@ class SessionHandler {
 
     const username = email.split("@")[0];
     const history = await SessionHandler.zepClient.memory.getMemory(sessionId);
-    // TODO: use names over roles
+    if (!history) console.log('No history here!')
     return history?.messages.map((message) => ({
             text: message.content,
             user: message.role === 'ai' ? 'AI-Therapist': username,

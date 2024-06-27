@@ -21,8 +21,6 @@ class SocketHandler {
     }
 
     private handleConnection(socket: Socket) {
-        console.log('New client connected...');
-
         socket.on('joinSession', this.handleJoinSession.bind(this, socket));
         socket.on('message', this.handleMessage.bind(this, socket));
         socket.on('disconnect', this.handleDisconnect.bind(this, socket));
@@ -32,9 +30,11 @@ class SocketHandler {
         const { sessionId, email } = data;
         socket.join(sessionId);
         socket.data.sessionId = sessionId;
+        console.log(`Client ${email} joined session: ${sessionId}`);
+
         const entry = await Entry.findById(sessionId)
+        void SessionHandler.createUser(email, entry!)
         void this.SessionHandler.createChain(entry!);
-        console.log(`Client joined session: ${sessionId}`);
 
         // If conversation exists, emit a new message with history
         const history = await this.SessionHandler.getMemory(sessionId, email)
