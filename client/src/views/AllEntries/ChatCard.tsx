@@ -1,28 +1,30 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "@/contexts/authContext";
+import { v4 as uuidv4 } from "uuid";
 
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 
 interface Message {
+  id: string;
   text: string;
   timestamp: string;
   user: string;
+  type: 'human' | 'ai';
 }
 
 const ChatCard: React.FC<EntryProps> = ({ entry }) => {
   const { user } = useAuth();
-  const [message, setMessage] = useState<string>("");
+  const [input, setInput] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const lastMessageRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const newSocket = io("http://localhost:4001", {
@@ -45,23 +47,24 @@ const ChatCard: React.FC<EntryProps> = ({ entry }) => {
     });
 
     // Listen for new messages
-    newSocket.on(
-      "message",
-      (msg: { text: string; timestamp: string; user: string }) => {
-        console.log(msg);
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          { text: msg.text, timestamp: msg.timestamp, user: msg.user },
-        ]);
-      }
-    );
+    newSocket.on("message", (msg: { text: string; timestamp: string; user: string, type: string }) => {
+      const id = uuidv4();
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { id, text: msg.text, timestamp: msg.timestamp, user: msg.user, type: 'ai' },
+      ]);
+    });
 
     newSocket.on("history", (history) => {
-      setMessages(history);
+      const formattedHistory = history.map((msg: { text: string; timestamp: string; user: string, type: string }) => ({
+        id: uuidv4(),
+        ...msg,
+        type: msg.user === "AI-Therapist" ? 'ai' : 'human'
+      }));
+      setMessages(formattedHistory);
     });
 
     newSocket.on("error", (error) => {
-      // TODO: properly handle
       console.error(error);
     });
 
@@ -70,42 +73,70 @@ const ChatCard: React.FC<EntryProps> = ({ entry }) => {
     };
   }, [entry._id, user?.email]);
 
+  useEffect(() => {
+    if (lastMessageRef.current) {
+      const lastMessageElement = lastMessageRef.current;
+      const animationClass = lastMessageElement.classList.contains('ai')
+        ? 'animate__fadeInLeft'
+        : 'animate__fadeInRight';
+
+      lastMessageElement.classList.add('animate__animated', animationClass);
+
+      const removeAnimationClass = () => {
+        lastMessageElement.classList.remove('animate__animated', animationClass);
+      };
+
+      const timeoutId = setTimeout(removeAnimationClass, 1000);
+
+      return () => {
+        clearTimeout(timeoutId);
+      };
+    }
+  }, [messages]);
+
   const handleSubmit = (e: React.KeyboardEvent) => {
     if (e.code === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (message.trim() && socket) {
+      if (input.trim() && socket) {
+        const id = uuidv4();
         const newMessage: Message = {
-          text: message,
+          id,
+          text: input,
           timestamp: new Date().toLocaleString(),
           user: user?.email || "Anonymous",
+          type: 'human'
         };
         setMessages((prevMessages) => [...prevMessages, newMessage]);
         socket.emit("message", {
           sessionId: entry._id,
           token: localStorage.getItem("somewhereAIToken"),
-          message: message,
+          message: input,
         });
-        setMessage("");
+        setInput("");
       }
     }
   };
 
   interface MessageCardProps {
     msg: Message;
+    refProp?: React.RefObject<HTMLDivElement>;
   }
 
-  const MessageCard: React.FC<MessageCardProps> = ({ msg }) => {
-    const [date, time] = msg.timestamp.split(',')
+  const MessageCard: React.FC<MessageCardProps> = ({ msg, refProp }) => {
+    const [date, time] = msg.timestamp.split(",");
     return (
-      <Card className={
-        `m-2 
-        ${msg.user === 'AI-Therapist' 
-        ? 'bg-muted text-left animate__animated animate__fadeInLeft' 
-        : 'bg-primary text-right animate__animated animate__fadeInRight'
-        }`}>
+      <Card
+        ref={refProp}
+        className={`m-2 ${msg.type} ${
+          msg.type === "ai"
+            ? "bg-muted text-left"
+            : "bg-primary text-right"
+        }`}
+      >
         <CardHeader>
-          <CardTitle >{date} | {time} | {msg.user}</CardTitle>
-          {/* <CardDescription>{msg.user}</CardDescription> */}
+          <CardTitle>
+            {date} | {time} | {msg.user}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <p>{msg.text}</p>
@@ -118,15 +149,19 @@ const ChatCard: React.FC<EntryProps> = ({ entry }) => {
     <div className="flex flex-col h-full justify-center items-center w-full whitespace-pre-wrap antialiased">
       <div className="flex flex-col w-3/4">
         {messages.map((msg, index) => (
-          <MessageCard key={index} msg={msg} />
+          <MessageCard
+            key={msg.id}
+            msg={msg}
+            refProp={index === messages.length - 1 ? lastMessageRef : undefined}
+          />
         ))}
       </div>
       <div className="w-full p-5">
         <Textarea
           className="mt-5 h-24 resize-none border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           placeholder="I like trains."
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleSubmit}
         />
       </div>

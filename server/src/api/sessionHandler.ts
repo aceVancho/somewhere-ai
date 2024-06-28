@@ -182,7 +182,8 @@ class SessionHandler {
         minute: 'numeric',
         hour12: true,
       }),
-      user: 'AI-Therapist'
+      user: 'AI-Therapist',
+      type: 'ai'
     }
   }
 }
