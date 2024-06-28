@@ -98,10 +98,10 @@ const ChatCard: React.FC<EntryProps> = ({ entry }) => {
     const [date, time] = msg.timestamp.split(',')
     return (
       <Card className={
-        `m-2 w-3/4 
+        `m-2 
         ${msg.user === 'AI-Therapist' 
-        ? 'self-start bg-muted text-left animate__animated animate__fadeInLeft' 
-        : 'self-end bg-primary text-right animate__animated animate__fadeInRight'
+        ? 'bg-muted text-left animate__animated animate__fadeInLeft' 
+        : 'bg-primary text-right animate__animated animate__fadeInRight'
         }`}>
         <CardHeader>
           <CardTitle >{date} | {time} | {msg.user}</CardTitle>
@@ -116,7 +116,7 @@ const ChatCard: React.FC<EntryProps> = ({ entry }) => {
 
   return (
     <div className="flex flex-col h-full justify-center items-center w-full whitespace-pre-wrap antialiased">
-      <div className="flex flex-col">
+      <div className="flex flex-col w-3/4">
         {messages.map((msg, index) => (
           <MessageCard key={index} msg={msg} />
         ))}
