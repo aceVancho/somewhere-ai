@@ -18,6 +18,15 @@ import { handleToolCalls, tools } from "./tools";
 import readline from "readline";
 import { pineconeQuery } from "./query";
 
+interface SummaryItem {
+  summary: string;
+  quote: string;
+}
+
+interface SummaryResponse {
+  summaries: SummaryItem[];
+}
+
 class CompletionHandler {
     private static instance: CompletionHandler
     private static model = process.env.OPEN_AI_CHAT_MODEL!;
@@ -104,6 +113,55 @@ class CompletionHandler {
       }
     }
 
+    public async getSummary(text: string): Promise<SummaryResponse> {
+      const llm = new ChatOpenAI({
+        modelName: CompletionHandler.model,
+        temperature: 1.2,
+        maxTokens: 4095,
+        topP: 1,
+        frequencyPenalty: 0.5,
+        presencePenalty: 0.5,
+      });
+    
+      const parser = StructuredOutputParser.fromZodSchema(
+        z.object({
+          summaries: z.array(
+            z.object({
+              summary: z.string(),
+              quote: z.string(),
+            })
+          )
+        })
+      );
+    
+      const systemMessage = `
+        You are an AI assistant contributing to a memory and pattern recognition system embedded into an AI-powered online journal. 
+        The goal is to use AI to assess patterns over the course of many journal entries. To provide the AI with as many entries as possible, 
+        entries must be distilled to their essential information. Your task is to reduce the user's text to a minimal state, 
+        retaining crucial information about the entry's knowledge content, the user's feelings, and any significant events or patterns. 
+        Please use excerpts from the entry to back up each summarized point. 
+        Responses must be in JSON format. {format_instructions}
+      `;
+    
+      const prompt = ChatPromptTemplate.fromMessages([
+        ['system', systemMessage],
+        ['user', text]
+      ]);
+    
+      const options = { format_instructions: parser.getFormatInstructions() };
+      const chain = prompt.pipe(llm).pipe(parser);
+    
+      try {
+        const response = await chain.invoke(options);
+        if (!response || !Array.isArray(response.summaries)) {
+          throw new Error('Invalid response');
+        }
+        return response as SummaryResponse;
+      } catch (error) {
+        console.error(error);
+        throw new Error('Error getting summary');
+      }
+    }
 }
 
 dotenv.config({ path: path.resolve("../.env") });
