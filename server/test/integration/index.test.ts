@@ -9,7 +9,10 @@ interface SummaryItem {
   interface SummaryResponse {
     summaries: SummaryItem[];
   }
-  
+
+  interface TagsResponse {
+    tags: string[];
+  }
   describe('CompletionHandler Integration Tests', () => {
     jest.setTimeout(30000); // 30 seconds
 
@@ -48,4 +51,31 @@ interface SummaryItem {
         expect(typeof item.quote).toBe('string');
       });
     });
+
+    it('should return tags from API', async () => {
+        const response = await CompletionHandler.getTags(testTexts.sampleEntry2) as TagsResponse;
+        console.log('API Response for Tags:', response);
+    
+        if (!response || !Array.isArray(response.tags)) {
+          console.error('Invalid response structure:', response);
+          throw new Error('Invalid response structure');
+        }
+    
+        response.tags.forEach(tag => {
+          expect(typeof tag).toBe('string');
+        });
+      });
+
+      it('should return sentiment score from API', async () => {
+        const response: string | undefined = await CompletionHandler.getSentimentScore(testTexts.sampleEntry2);
+        console.log('API Response for Sentiment Score:', response);
+    
+        if (typeof response !== 'string') {
+          console.error('Invalid response structure:', response);
+          throw new Error('Invalid response structure');
+        }
+    
+        expect(typeof response).toBe('string');
+        expect(Number(response)).not.toBeNaN();
+      });
   });

@@ -50,6 +50,11 @@ class CompletionHandler {
         topP: 1,
         frequencyPenalty: 0.5,
         presencePenalty: 0.5,
+        modelKwargs: {
+          response_format: {
+            type: "json_object"
+          }
+        }
       })
 
       const parser = StructuredOutputParser.fromZodSchema(
@@ -76,6 +81,45 @@ class CompletionHandler {
       }
     }
 
+    public async getTags(text: string) {
+      const llm = new ChatOpenAI({
+        modelName: CompletionHandler.model,
+        temperature: 1.2,
+        maxTokens: 4095,
+        topP: 1,
+        frequencyPenalty: 0.5,
+        presencePenalty: 0.5,
+        modelKwargs: {
+          response_format: {
+            type: "json_object"
+          }
+        }
+      });
+    
+      const parser = StructuredOutputParser.fromZodSchema(
+        z.object({ tags: z.array(z.string()) })
+      );
+    
+      const systemMessage = `
+        You are an AI assistant that, given a user's journal entry, returns relevant tags.
+        Responses must be in JSON format. {format_instructions}
+      `;
+    
+      const prompt = ChatPromptTemplate.fromMessages([
+        ['system', systemMessage],
+        ['user', text]
+      ]);
+    
+      const options = { format_instructions: parser.getFormatInstructions() };
+      const chain = prompt.pipe(llm).pipe(parser);
+    
+      try {
+        return await chain.invoke(options);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
     public async getQuestions(text: string) {
       const llm = new ChatOpenAI({
         modelName: CompletionHandler.model,
@@ -84,6 +128,11 @@ class CompletionHandler {
         topP: 1,
         frequencyPenalty: 0.5,
         presencePenalty: 0.5,
+        modelKwargs: {
+          response_format: {
+            type: "json_object"
+          }
+        }
       })
 
       const parser = StructuredOutputParser.fromZodSchema(
@@ -121,6 +170,11 @@ class CompletionHandler {
         topP: 1,
         frequencyPenalty: 0.5,
         presencePenalty: 0.5,
+        modelKwargs: {
+          response_format: {
+            type: "json_object"
+          }
+        }
       });
     
       const parser = StructuredOutputParser.fromZodSchema(
@@ -161,6 +215,79 @@ class CompletionHandler {
         console.error(error);
         throw new Error('Error getting summary');
       }
+    }
+
+    public async getSentimentScore(text: string) {
+      const llm = new ChatOpenAI({
+        modelName: CompletionHandler.model,
+        temperature: 1.2,
+        maxTokens: 4095,
+        topP: 1,
+        frequencyPenalty: 0.5,
+        presencePenalty: 0.5,
+        modelKwargs: {
+          response_format: {
+            type: "json_object"
+          }
+        }
+      })
+      // .withStructuredOutput({ method: "jsonMode"});
+    
+      const splitSystemMessage = `
+        You are an AI assistant tasked with analyzing user journal entries. Your goal is to split the entry into coherent chunks based on topic, meaning, thought, or morale. Each chunk should represent a distinct idea or theme from the entry.
+        Responses must be in JSON format like: sections: string[]
+      `;
+    
+      const splitPrompt = ChatPromptTemplate.fromMessages([
+        ['system', splitSystemMessage],
+        ['user', text]
+      ]);
+
+      const splitChain = splitPrompt.pipe(llm);
+
+    
+      let sectionsResponse;
+      try {
+        sectionsResponse = await splitChain.invoke({ input: ''});
+      } catch (error) {
+        console.log('This error 1')
+        console.error(error);
+      }
+    
+      if (!sectionsResponse) return
+      const sections = sectionsResponse.content;
+    
+      const sentimentSystemMessage = `
+        You are an AI assistant that, given a section of a user's journal entry, returns a sentiment score for the section. Scores should be on a scale from -1 (very negative) to 1 (very positive).
+        Responses must be in JSON format like: scores: string[]
+      `;
+    
+      const sentimentScores: string[] = [];
+    
+      for (const section of sections) {
+        const sentimentPrompt = ChatPromptTemplate.fromMessages([
+          ['system', sentimentSystemMessage],
+          ['user', section]
+        ]);
+    
+        const sentimentChain = sentimentPrompt.pipe(llm);
+    
+        let sentimentResponse;
+        try {
+          sentimentResponse = await sentimentChain.invoke('');
+          sentimentScores.push(...sentimentResponse.scores);
+        } catch (error) {
+          console.log('This error 2')
+          console.error(error);
+          sentimentScores.push("0"); // Default score if there's an error
+        }
+      }
+    
+      // Calculate aggregate score
+      const aggregateScore = sentimentScores
+        .reduce((acc, score) => acc + parseFloat(score), 0) / sentimentScores.length;
+    
+      return aggregateScore.toFixed(2);
     }
 }
 

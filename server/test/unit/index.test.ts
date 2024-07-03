@@ -7,6 +7,8 @@ jest.mock('../../src/api/completionHandler', () => ({
     getTitle: jest.fn(),
     getQuestions: jest.fn(),
     getSummary: jest.fn(),
+    getTags: jest.fn(),
+    getSentimentScore: jest.fn(),
   },
 }));
 
@@ -54,5 +56,25 @@ describe('CompletionHandler Tests', () => {
 
     expect(response).toEqual(mockSummaryResponse);
     expect(CompletionHandler.getSummary).toHaveBeenCalledWith(testTexts.sampleEntry2);
+  });
+
+  it('should return tags', async () => {
+    const mockTagsResponse = { tags: ['tag1', 'tag2', 'tag3'] };
+    (CompletionHandler.getTags as jest.Mock).mockResolvedValue(mockTagsResponse);
+
+    const response = await CompletionHandler.getTags(testTexts.sampleEntry2);
+
+    expect(response).toEqual(mockTagsResponse);
+    expect(CompletionHandler.getTags).toHaveBeenCalledWith(testTexts.sampleEntry2);
+  });
+
+  it('should return sentiment score', async () => {
+    const mockSentimentResponse = '0.60';
+    (CompletionHandler.getSentimentScore as jest.Mock).mockResolvedValue(mockSentimentResponse);
+
+    const response = await CompletionHandler.getSentimentScore(testTexts.sampleEntry2);
+
+    expect(response).toEqual(mockSentimentResponse);
+    expect(CompletionHandler.getSentimentScore).toHaveBeenCalledWith(testTexts.sampleEntry2);
   });
 });
