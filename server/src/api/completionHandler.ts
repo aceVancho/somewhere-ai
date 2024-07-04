@@ -13,7 +13,9 @@ interface SummaryResponse {
   summaries: SummaryItem[];
 }
 
-
+interface MetadataOptions {
+  title: string
+}
 
 const openai = new OpenAI();
 const model = process.env.OPEN_AI_CHAT_MODEL!;
@@ -235,7 +237,26 @@ class CompletionHandler {
     
       return aggregateScore.toFixed(2);
     }
+
+    public async createEntryMetadata(entry: IEntry, options: MetadataOptions): Promise<{ title: string; tags: string[]; analysis: string; sentiment: number; goals: string[]; questions: string[]; summaries: SummaryItem[] }> {
+      try {
+        const title = options.title ? options.title : await this.getTitle(entry.text).then(res => res.title);
+        const tags = await this.getTags(entry.text).then(res => res.tags);
+        const analysis = await this.getSummary(entry.text).then(res => res.summaries.map(s => s.summary).join(" "));
+        const summaries = await this.getSummary(entry.text).then(res => res.summaries);
+        const sections = summaries.map(s => s.quote);
+        const sentimentPromises = sections.map(section => this.getSentimentScore(section));
+        const sentiments = await Promise.all(sentimentPromises);
+        const overallSentiment = sentiments.reduce((acc, score) => acc + parseFloat(score), 0) / sentiments.length;
+        const goals = await this.getGoals(entry.text).then(res => res.goals);
+        const questions = await this.getQuestions(entry.text).then(res => res.questions);
     
+        return { title, tags, analysis, sentiment: overallSentiment, goals, questions, summaries };
+      } catch (error) {
+        console.error('Error during metadata creation:', error);
+        throw new Error('Failed to create entry metadata');
+      }
+    }
 }
 
 dotenv.config({ path: path.resolve("../.env") });

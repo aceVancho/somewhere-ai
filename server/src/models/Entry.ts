@@ -8,6 +8,10 @@ const EntrySchema: Schema = new Schema({
   sentiment: { type: Number, default: 0 },
   goals: { type: [String], default: [] },
   questions: { type: [String], default: [] },
+  summaries: [{
+    summary: { type: String, required: true },
+    quote: { type: String, required: true }
+  }],
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }

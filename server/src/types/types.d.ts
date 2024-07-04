@@ -20,7 +20,11 @@ declare global {
     analysis: string;
     sentiment: number;
     goals: string[];
-    questions: string[]
+    questions: string[],
+    summaries: [{
+      summary: { type: String, required: true },
+      quote: { type: String, required: true }
+    }],
     user: mongoose.Schema.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
@@ -45,5 +49,7 @@ declare global {
     date: string;
   }
 }
+
+
 
 export { IUser, IEntry };
