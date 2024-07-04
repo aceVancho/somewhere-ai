@@ -1,22 +1,8 @@
 import path from "path";
-import { ChatOpenAI } from "@langchain/openai";
 import dotenv from "dotenv";
-import { v4 as uuidv4 } from "uuid";
-import { SystemMessage } from "@langchain/core/messages";
-import { Session, ZepClient, Message } from "@getzep/zep-js";
-import { ZepChatMessageHistory } from "@getzep/zep-js/langchain";
-import {
-  ChatPromptTemplate,
-  MessagesPlaceholder,
-} from "@langchain/core/prompts";
-import { RunnableWithMessageHistory } from "@langchain/core/runnables";
-import { PromptTemplate } from "@langchain/core/prompts";
-
-import { JsonOutputFunctionsParser, StructuredOutputParser } from "langchain/output_parsers";
-import { z } from "zod";
-import { handleToolCalls, tools } from "./tools";
-import readline from "readline";
-import { pineconeQuery } from "./query";
+import OpenAI from "openai";
+import { prompts } from './prompts';
+dotenv.config({ path: path.resolve("../.env") });
 
 interface SummaryItem {
   summary: string;
@@ -26,6 +12,11 @@ interface SummaryItem {
 interface SummaryResponse {
   summaries: SummaryItem[];
 }
+
+
+
+const openai = new OpenAI();
+const model = process.env.OPEN_AI_CHAT_MODEL!;
 
 class CompletionHandler {
     private static instance: CompletionHandler
@@ -42,253 +33,209 @@ class CompletionHandler {
       return CompletionHandler.instance;
     }
 
-    public async getTitle(text: string) {
-      const llm = new ChatOpenAI({
-        modelName: CompletionHandler.model,
-        temperature: 1.2,
-        maxTokens: 4095,
-        topP: 1,
-        frequencyPenalty: 0.5,
-        presencePenalty: 0.5,
-        modelKwargs: {
-          response_format: {
-            type: "json_object"
-          }
-        }
-      })
-
-      const parser = StructuredOutputParser.fromZodSchema(
-        z.object({ title: z.string() })
-      )
-
-      const systemMessage = `
-        You are an AI assistant that, given a user's journal entry, returns a clever, descriptive title.
-        Responses must be in JSON format. {format_instructions}
-      `
-
-      const prompt = ChatPromptTemplate.fromMessages([
-        ['system', systemMessage],
-        ['user', text]
-      ])
-
-      const options = { format_instructions: parser.getFormatInstructions() }
-      const chain = prompt.pipe(llm).pipe(parser);
-
+    public async getTitle(text: string): Promise<{ title: string }> {
       try {
-        return await chain.invoke(options)
+        const completion = await openai.chat.completions.create({
+          messages: [
+            { role: "system", content: prompts.getTitle },
+            { role: "user", content: `Entry: ${text}` },
+          ],
+          model,
+          temperature: 1.2,
+          max_tokens: 4095,
+          top_p: 1,
+          frequency_penalty: 0.5,
+          presence_penalty: 0.5,
+          response_format: {'type': 'json_object'}
+        });
+    
+        const response = completion?.choices[0]?.message?.content;
+        
+        if (!response) {
+          throw new Error('OpenAI API returned an empty response');
+        }
+        
+        return JSON.parse(response);
       } catch (error) {
-        console.error(error)
+    
+        console.error('Error generating title:', error);
+        throw new Error('Failed to generate title');
       }
     }
 
-    public async getTags(text: string) {
-      const llm = new ChatOpenAI({
-        modelName: CompletionHandler.model,
-        temperature: 1.2,
-        maxTokens: 4095,
-        topP: 1,
-        frequencyPenalty: 0.5,
-        presencePenalty: 0.5,
-        modelKwargs: {
-          response_format: {
-            type: "json_object"
-          }
-        }
-      });
-    
-      const parser = StructuredOutputParser.fromZodSchema(
-        z.object({ tags: z.array(z.string()) })
-      );
-    
-      const systemMessage = `
-        You are an AI assistant that, given a user's journal entry, returns relevant tags.
-        Responses must be in JSON format. {format_instructions}
-      `;
-    
-      const prompt = ChatPromptTemplate.fromMessages([
-        ['system', systemMessage],
-        ['user', text]
-      ]);
-    
-      const options = { format_instructions: parser.getFormatInstructions() };
-      const chain = prompt.pipe(llm).pipe(parser);
-    
+    public async getTags(text: string): Promise<{ tags: string[] }> {
       try {
-        return await chain.invoke(options);
+        const completion = await openai.chat.completions.create({
+          messages: [
+            { role: "system", content: prompts.getTags },
+            { role: "user", content: `Entry: ${text}` },
+          ],
+          model,
+          temperature: 1.2,
+          max_tokens: 4095,
+          top_p: 1,
+          frequency_penalty: 0.5,
+          presence_penalty: 0.5,
+          response_format: {'type': 'json_object'}
+        });
+    
+        const response = completion?.choices[0]?.message?.content;
+    
+        if (!response) throw new Error('OpenAI API returned an empty response')
+        return JSON.parse(response);
       } catch (error) {
-        console.error(error);
+        console.error('Error generating tags:', error);
+        throw new Error('Failed to generate tags');
       }
     }
+    
 
-    public async getQuestions(text: string) {
-      const llm = new ChatOpenAI({
-        modelName: CompletionHandler.model,
-        temperature: 1.2,
-        maxTokens: 4095,
-        topP: 1,
-        frequencyPenalty: 0.5,
-        presencePenalty: 0.5,
-        modelKwargs: {
-          response_format: {
-            type: "json_object"
-          }
-        }
-      })
-
-      const parser = StructuredOutputParser.fromZodSchema(
-        z.object({ questions: z.array(z.string()) })
-      )
-
-      const systemMessage = `  
-      Based off the given user entry, suggest some thought-provoking questions the user could use to dive deeper into themselves. 
-        - Questions should be highly specific, referencing notable excerpts from the text. 
-        - Questions can also be asked from the persona of a "devil's advocate" — suggesting counterpoints and alternative perspectives that challenge what the user wrote.
-      Further instructions: Max 5 Questions. 
-      Responses must be in JSON format. {format_instructions}
-      `
-
-      const prompt = ChatPromptTemplate.fromMessages([
-        ['system', systemMessage],
-        ['user', text]
-      ])
-
-      const options = { format_instructions: parser.getFormatInstructions() }
-      const chain = prompt.pipe(llm).pipe(parser);
-
+    public async getQuestions(text: string): Promise<{ questions: string[] }> {
       try {
-        return await chain.invoke(options)
+        const completion = await openai.chat.completions.create({
+          messages: [
+            { role: "system", content: prompts.getQuestions },
+            { role: "user", content: `Entry: ${text}` },
+          ],
+          model,
+          temperature: 1.2,
+          max_tokens: 4095,
+          top_p: 1,
+          frequency_penalty: 0.5,
+          presence_penalty: 0.5,
+          response_format: {'type': 'json_object'}
+        });
+    
+        const response = completion?.choices[0]?.message?.content;
+    
+        if (!response) {
+          throw new Error('OpenAI API returned an empty response');
+        }
+    
+        return JSON.parse(response);
       } catch (error) {
-        console.error(error)
+        console.error('Error generating questions:', error);
+        throw new Error('Failed to generate questions');
       }
     }
+    
+    public async getGoals(text: string): Promise<{ goals: string[] }> {
+      try {
+        const completion = await openai.chat.completions.create({
+          messages: [
+            { role: "system", content: prompts.getGoals },
+            { role: "user", content: `Entry: ${text}` },
+          ],
+          model,
+          temperature: 1.2,
+          max_tokens: 4095,
+          top_p: 1,
+          frequency_penalty: 0.5,
+          presence_penalty: 0.5,
+          response_format: {'type': 'json_object'}
+        });
+    
+        const response = completion?.choices[0]?.message?.content;
+    
+        if (!response) throw new Error('OpenAI API returned an empty response');
+        return JSON.parse(response);
+      } catch (error) {
+        console.error('Error generating goals:', error);
+        throw new Error('Failed to generate goals');
+      }
+    }
+    
 
     public async getSummary(text: string): Promise<SummaryResponse> {
-      const llm = new ChatOpenAI({
-        modelName: CompletionHandler.model,
-        temperature: 1.2,
-        maxTokens: 4095,
-        topP: 1,
-        frequencyPenalty: 0.5,
-        presencePenalty: 0.5,
-        modelKwargs: {
-          response_format: {
-            type: "json_object"
-          }
-        }
-      });
-    
-      const parser = StructuredOutputParser.fromZodSchema(
-        z.object({
-          summaries: z.array(
-            z.object({
-              summary: z.string(),
-              quote: z.string(),
-            })
-          )
-        })
-      );
-    
-      const systemMessage = `
-        You are an AI assistant contributing to a memory and pattern recognition system embedded into an AI-powered online journal. 
-        The goal is to use AI to assess patterns over the course of many journal entries. To provide the AI with as many entries as possible, 
-        entries must be distilled to their essential information. Your task is to reduce the user's text to a minimal state, 
-        retaining crucial information about the entry's knowledge content, the user's feelings, and any significant events or patterns. 
-        Please use excerpts from the entry to back up each summarized point. 
-        Responses must be in JSON format. {format_instructions}
-      `;
-    
-      const prompt = ChatPromptTemplate.fromMessages([
-        ['system', systemMessage],
-        ['user', text]
-      ]);
-    
-      const options = { format_instructions: parser.getFormatInstructions() };
-      const chain = prompt.pipe(llm).pipe(parser);
-    
       try {
-        const response = await chain.invoke(options);
-        if (!response || !Array.isArray(response.summaries)) {
-          throw new Error('Invalid response');
-        }
-        return response as SummaryResponse;
+        const completion = await openai.chat.completions.create({
+          messages: [
+            { role: "system", content: prompts.getSummary },
+            { role: "user", content: `Entry: ${text}` },
+          ],
+          model,
+          temperature: 1,
+          max_tokens: 2000,
+          top_p: 1,
+          response_format: { type: 'json_object' }
+        });
+    
+        const response = completion?.choices[0]?.message?.content;
+    
+        if (!response) throw new Error('OpenAI API returned an empty response');
+        return JSON.parse(response);
       } catch (error) {
-        console.error(error);
-        throw new Error('Error getting summary');
+        console.error('Error generating summaries:', error);
+        throw new Error('Failed to generate summaries');
       }
     }
 
-    public async getSentimentScore(text: string) {
-      const llm = new ChatOpenAI({
-        modelName: CompletionHandler.model,
-        temperature: 1.2,
-        maxTokens: 4095,
-        topP: 1,
-        frequencyPenalty: 0.5,
-        presencePenalty: 0.5,
-        modelKwargs: {
-          response_format: {
-            type: "json_object"
-          }
-        }
-      })
-      // .withStructuredOutput({ method: "jsonMode"});
+    public async getSentimentScore(text: string): Promise<string> {
+      let sections: string[] = [];
     
-      const splitSystemMessage = `
-        You are an AI assistant tasked with analyzing user journal entries. Your goal is to split the entry into coherent chunks based on topic, meaning, thought, or morale. Each chunk should represent a distinct idea or theme from the entry.
-        Responses must be in JSON format like: sections: string[]
-      `;
-    
-      const splitPrompt = ChatPromptTemplate.fromMessages([
-        ['system', splitSystemMessage],
-        ['user', text]
-      ]);
-
-      const splitChain = splitPrompt.pipe(llm);
-
-    
-      let sectionsResponse;
       try {
-        sectionsResponse = await splitChain.invoke({ input: ''});
+        const completion = await openai.chat.completions.create({
+          messages: [
+            { role: "system", content: prompts.getEntrySections },
+            { role: "user", content: `Entry: ${text}` },
+          ],
+          model,
+          temperature: 1.2,
+          max_tokens: 4095,
+          top_p: 1,
+          frequency_penalty: 0.5,
+          presence_penalty: 0.5,
+          response_format: { type: 'json_object' }
+        });
+    
+        const response = completion?.choices[0]?.message?.content;
+    
+        if (!response) throw new Error('OpenAI API returned an empty response');
+        sections = JSON.parse(response).sections;
       } catch (error) {
-        console.log('This error 1')
-        console.error(error);
+        console.error('Error generating sections:', error);
+        throw new Error('Failed to generate sections');
       }
-    
-      if (!sectionsResponse) return
-      const sections = sectionsResponse.content;
-    
-      const sentimentSystemMessage = `
-        You are an AI assistant that, given a section of a user's journal entry, returns a sentiment score for the section. Scores should be on a scale from -1 (very negative) to 1 (very positive).
-        Responses must be in JSON format like: scores: string[]
-      `;
     
       const sentimentScores: string[] = [];
     
       for (const section of sections) {
-        const sentimentPrompt = ChatPromptTemplate.fromMessages([
-          ['system', sentimentSystemMessage],
-          ['user', section]
-        ]);
-    
-        const sentimentChain = sentimentPrompt.pipe(llm);
-    
-        let sentimentResponse;
         try {
-          sentimentResponse = await sentimentChain.invoke('');
-          sentimentScores.push(...sentimentResponse.scores);
+          const completion = await openai.chat.completions.create({
+            messages: [
+              { role: "system", content: prompts.getSentimentScore },
+              { role: "user", content: `Entry: ${section}` },
+            ],
+            model,
+            temperature: 1.2,
+            max_tokens: 4095,
+            top_p: 1,
+            frequency_penalty: 0.5,
+            presence_penalty: 0.5,
+            response_format: { type: 'json_object' }
+          });
+    
+          const response = completion?.choices[0]?.message?.content;
+
+    
+          if (!response) throw new Error('OpenAI API returned an empty response');
+          const parsedResponse = JSON.parse(response);
+          if (typeof parsedResponse.score !== 'string') {
+            throw new Error('Invalid response structure for score');
+          }
+          sentimentScores.push(parsedResponse.score);
         } catch (error) {
-          console.log('This error 2')
-          console.error(error);
-          sentimentScores.push("0"); // Default score if there's an error
+          console.error('Error generating sentiment score:', error);
+          sentimentScores.push("0");
         }
       }
     
-      // Calculate aggregate score
       const aggregateScore = sentimentScores
         .reduce((acc, score) => acc + parseFloat(score), 0) / sentimentScores.length;
     
       return aggregateScore.toFixed(2);
     }
+    
 }
 
 dotenv.config({ path: path.resolve("../.env") });

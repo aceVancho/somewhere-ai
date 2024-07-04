@@ -1,6 +1,7 @@
 import CompletionHandler from '../../src/api/completionHandler';
 import { testTexts } from "../../src/docs/texts";
 
+// Mocking the methods of the singleton instance
 jest.mock('../../src/api/completionHandler', () => ({
   __esModule: true,
   default: {
@@ -9,6 +10,7 @@ jest.mock('../../src/api/completionHandler', () => ({
     getSummary: jest.fn(),
     getTags: jest.fn(),
     getSentimentScore: jest.fn(),
+    getGoals: jest.fn()
   },
 }));
 
@@ -76,5 +78,15 @@ describe('CompletionHandler Tests', () => {
 
     expect(response).toEqual(mockSentimentResponse);
     expect(CompletionHandler.getSentimentScore).toHaveBeenCalledWith(testTexts.sampleEntry2);
+  });
+
+  it('should return goals', async () => {
+    const mockGoalsResponse = { goals: ['Goal 1', 'Goal 2'] };
+    (CompletionHandler.getGoals as jest.Mock).mockResolvedValue(mockGoalsResponse);
+
+    const response = await CompletionHandler.getGoals(testTexts.sampleEntry2);
+
+    expect(response).toEqual(mockGoalsResponse);
+    expect(CompletionHandler.getGoals).toHaveBeenCalledWith(testTexts.sampleEntry2);
   });
 });
