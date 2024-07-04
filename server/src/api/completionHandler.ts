@@ -185,14 +185,22 @@ class CompletionHandler {
         presence_penalty: 0.3,
         response_format: { type: "json_object" },
       });
-
+  
       const response = completion?.choices[0]?.message?.content;
-
-      if (!response) throw new Error("OpenAI API returned an empty response");
-      return JSON.parse(response);
+  
+      if (!response) {
+        throw new Error('OpenAI API returned an empty response');
+      }
+  
+      const parsedResponse = JSON.parse(response);
+      if (!parsedResponse.summaries || !Array.isArray(parsedResponse.summaries)) {
+        throw new Error('Invalid response structure');
+      }
+  
+      return parsedResponse;
     } catch (error) {
-      console.error("Error generating summaries:", error);
-      throw new Error("Failed to generate summaries");
+      console.error('Error generating summaries:', error);
+      throw new Error('Failed to generate summaries');
     }
   }
 
@@ -259,7 +267,7 @@ class CompletionHandler {
       sentimentScores.reduce((acc, score) => acc + parseFloat(score), 0) /
       sentimentScores.length;
 
-    return aggregateScore.toFixed(2);
+    return aggregateScore.toFixed(2).toString();
   }
 
   public async getTrends(entry: IEntry): Promise<{ trends: string }> {
@@ -274,12 +282,19 @@ class CompletionHandler {
     }
 
     if (!userEntries || userEntries.length === 0) {
-      throw new Error("No entries found for user");
+      console.error("No entries found for user")
+      // TODO: Fix
+      return { trends: 'No entries found for user.'}
     }
 
+    userEntries = userEntries.filter(e => e._id.toString() !== entry._id.toString());
+
+    // TODO: need to parse out _ids
     const combinedSummaries = userEntries.map((e) => ({
       [e.createdAt.toISOString()]: e.summaries,
     }));
+
+    const formattedSummaries = JSON.stringify(combinedSummaries, null, 2)
 
     try {
       const completion = await openai.chat.completions.create({
@@ -288,7 +303,7 @@ class CompletionHandler {
             role: "system",
             content: prompts.getTrends,
           },
-          { role: "user", content: `Summaries: ${combinedSummaries}` },
+          { role: "user", content: `Summaries: ${formattedSummaries}` },
           { role: "user", content: `Entry: ${entry.text}` },
         ],
         model,
@@ -317,7 +332,7 @@ class CompletionHandler {
     title: string;
     tags: string[];
     analysis: string;
-    sentiment: number;
+    sentiment: string;
     goals: string[];
     questions: string[];
     summaries: SummaryItem[];
@@ -337,22 +352,13 @@ class CompletionHandler {
       );
       const trends = await this.getTrends(entry).then((res) => res.trends);
       const analysis = await this.getAnalysis(entry.text).then((res) => res.analysis);
-
-      // Sentiment
-      const sections = summaries.map((s) => s.quote);
-      const sentimentPromises = sections.map((section) =>
-        this.getSentimentScore(section)
-      );
-      const sentiments = await Promise.all(sentimentPromises);
-      const overallSentiment =
-        sentiments.reduce((acc, score) => acc + parseFloat(score), 0) /
-        sentiments.length;
+      const sentiment = await this.getSentimentScore(entry.text).then((res) => res)
 
       return {
         title,
         tags,
         analysis,
-        sentiment: overallSentiment,
+        sentiment,
         goals,
         questions,
         summaries,

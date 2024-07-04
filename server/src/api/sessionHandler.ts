@@ -167,7 +167,6 @@ class SessionHandler {
             response_metadata: {}
         })
     });
-
     const options = { configurable: { sessionId } };
     const input = { question: message, context, entryText: session.metadata.text }
     const response = await chain?.invoke(input, options)

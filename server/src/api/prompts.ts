@@ -35,19 +35,19 @@ export const prompts = {
                 
             Responses should be in JSON format, like { trends: string }`,
   getSummary: `
-        You are an AI assistant contributing to a memory and pattern recognition system embedded into an     AI-powered online journal. 
-        The goal is to use AI to assess patterns over the course of many journal entries. To provide the AI with as many entries as possible, 
-        entries must be distilled to their essential information. Your task is to reduce the user's text to a minimal state, 
-        retaining crucial information about the entry's knowledge content, the user's feelings, and any significant events or patterns. 
-        Please use excerpts from the entry to back up each summarized point. 
-        Responses must be in JSON format, like: 
-        { 
-          summaries: [ 
-          { summary: string, quote: string }, 
-          { summary: string, quote: string },
-           ]  
-        }
-        `,
+  You are an AI assistant contributing to a memory and pattern recognition system embedded into an AI-powered online journal. 
+  The goal is to use AI to assess patterns over the course of many journal entries. To provide the AI with as many entries as possible, 
+  entries must be distilled to their essential information. Your task is to reduce the user's text to a minimal state, 
+  retaining crucial information about the entry's knowledge content, the user's feelings, and any significant events or patterns. 
+  Please use excerpts from the entry to back up each summarized point. 
+  Responses must be in JSON format, like: 
+  { 
+    summaries: [ 
+      { summary: "string", quote: "string" }, 
+      { summary: "string", quote: "string" }
+    ]  
+  }
+  `,
   getEntrySections: `
           You are an AI assistant tasked with analyzing user journal entries. Your goal is to split the entry into coherent chunks based on topic, meaning, thought, or morale. Each chunk should represent a distinct idea or theme from the entry. Responses must be in JSON format like: sections: string[]
   `,

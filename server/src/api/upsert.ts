@@ -1,37 +1,26 @@
 import { Pinecone, PineconeRecord, RecordMetadata } from '@pinecone-database/pinecone';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import OpenAI from 'openai';
-import { v4 as uuidv4 } from 'uuid';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const createChunks = async ({ userId, entryId, text, date }: UpsertProps): Promise<EntryChunk[]> => {
+const createChunks = async ({ text }: UpsertProps): Promise<string[]> => {
   const textSplitter = new RecursiveCharacterTextSplitter({
     chunkSize: 2000,
     chunkOverlap: 20,
   });
 
   const splitTextArray = await textSplitter.splitText(text);
-
-  return splitTextArray.map((text, index) => ({
-    id: `${entryId}#chunk-${index+1}`,
-    metadata: {
-      content: text,
-      parentEntryId: entryId,
-      userId,
-      createdDate: date,
-      chunkNumber: index+1,
-    },
-  }));
+  return splitTextArray;
 };
 
-const createEmbeddings = async (entryChunks: EntryChunk[]): Promise<PineconeRecord<RecordMetadata>[]> => {
+const createEmbeddings = async (textChunks: string[], metadata: Omit<RecordMetadata, 'content' | 'chunkNumber'>): Promise<PineconeRecord<RecordMetadata>[]> => {
   const openai = new OpenAI({ apiKey: process.env.OPEN_AI_API_KEY! });
   const pineconeRecords: PineconeRecord<RecordMetadata>[] = [];
   const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-  for (const [index, chunk] of entryChunks.entries()) {
+  for (const [index, chunk] of textChunks.entries()) {
     let embeddingObj;
     let finished = false;
 
@@ -40,26 +29,30 @@ const createEmbeddings = async (entryChunks: EntryChunk[]): Promise<PineconeReco
         embeddingObj = await openai.embeddings.create({
           model: process.env.OPEN_AI_EMBEDDING_MODEL!,
           encoding_format: 'float',
-          input: chunk.metadata.content,
+          input: chunk,
         });
         finished = true;
-        console.log(`Created embedding for chunk ${index + 1}/${entryChunks.length}`);
+        console.log(`Created embedding for chunk ${index + 1}/${textChunks.length}`);
       } catch (error) {
-        console.error(`CreateEmbedding Error for entry ${index + 1}:`, error);
+        console.error(`CreateEmbedding Error for chunk ${index + 1}:`, error);
         await sleep(1000);
       }
     }
 
     if (embeddingObj) {
       pineconeRecords.push({
-        id: chunk.id,
+        id: `${metadata.parentEntryId}#chunk-${index + 1}`,
         values: embeddingObj.data[0].embedding,
-        metadata: chunk.metadata,
+        metadata: {
+          ...metadata,
+          content: chunk,
+          chunkNumber: index + 1,
+        },
       });
     }
   }
 
-  console.log(`Finished creating embeddings for ${entryChunks.length} chunks.`);
+  console.log(`Finished creating embeddings for ${textChunks.length} chunks.`);
   return pineconeRecords;
 };
 
@@ -78,8 +71,13 @@ const upsertBatch = async (
 
 export const upsert = async ({ userId, entryId, text, date }: UpsertProps): Promise<void> => {
   try {
-    const chunkedEntries = await createChunks({ userId, entryId, text, date });
-    const pineconeRecords = await createEmbeddings(chunkedEntries);
+    const textChunks = await createChunks({ userId, entryId, text, date });
+    const metadata: Omit<RecordMetadata, 'content' | 'chunkNumber'> = {
+      parentEntryId: entryId,
+      userId,
+      createdDate: date,
+    };
+    const pineconeRecords = await createEmbeddings(textChunks, metadata);
 
     const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
     const index = pc.index(process.env.PINECONE_INDEX!);

@@ -30,13 +30,13 @@ export const createEntry = async (req: Request, res: Response): Promise<void> =>
 
     const newEntry = new Entry({ text, user: userId });
 
-    await upsert({ userId, entryId: newEntry.id, text, date });
-
+    
     const metadata = await CompletionHandler.createEntryMetadata(newEntry, { title });
-
+    
     newEntry.set(metadata);
     await newEntry.save({ session });
-
+    
+    await upsert({ userId, entryId: newEntry.id, text, date });
     await commitTransaction(session);
     res.status(201).json(newEntry);
   } catch (error) {
@@ -118,7 +118,7 @@ export const deleteEntry = async (req: Request, res: Response): Promise<void> =>
 
     const results = await index.namespace(entry.user.toString()).listPaginated({ prefix: `${req.params.id}#` });
     const vectorIds = results.vectors?.map((vector) => vector.id).filter((v): v is string => v !== undefined);
-
+    console.log(vectorIds)
     if (vectorIds && vectorIds.length > 0) {
       await index.namespace(entry.user.toString()).deleteMany(vectorIds);
     }
