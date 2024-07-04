@@ -21,6 +21,7 @@ declare global {
       analysis: string;
       sentiment: number;
       goals: string[];
+      trends: string;
       questions: string[];
       createdAt: Date;
       updatedAt: Date;

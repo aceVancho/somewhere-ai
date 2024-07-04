@@ -40,17 +40,17 @@ export const createEntry = async (req: Request, res: Response): Promise<void> =>
     await commitTransaction(session);
     res.status(201).json(newEntry);
   } catch (error) {
+    // TODO: Need to delete Pinecone chunks here too
     await abortTransaction(session);
     console.error(error);
     res.status(500).json({ error: `Error creating journal entry: ${error}` });
   }
 };
 
-
-// Get all journal entries
 export const getEntries = async (req: Request, res: Response): Promise<void> => {
   try {
-    const entries = await Entry.find();
+    const userId = req.user.id;
+    const entries = await Entry.find({ user: userId });
     res.status(200).json(entries);
   } catch (error) {
     console.error('Error fetching journal entries:', error);
@@ -58,10 +58,10 @@ export const getEntries = async (req: Request, res: Response): Promise<void> => 
   }
 };
 
-// Get a specific journal entry by ID
 export const getEntryById = async (req: Request, res: Response): Promise<void> => {
   try {
-    const entry = await Entry.findById(req.params.id);
+    const userId = req.user.id;
+    const entry = await Entry.findOne({ _id: req.params.id, user: userId });
     if (!entry) {
       res.status(404).json({ error: 'Journal entry not found' });
     } else {

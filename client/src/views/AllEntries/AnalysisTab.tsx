@@ -5,6 +5,7 @@ import AnalysisCard from "./AnalysisCard";
 import QuestionsCard from "./QuestionsCard";
 import { Badge } from "@/components/ui/badge";
 import { TabsContent } from "@/components/ui/tabs";
+import TrendsCard from "./TrendsCard";
 
 interface AnalysisTabProps {
   entry: {
@@ -12,6 +13,7 @@ interface AnalysisTabProps {
     tags: string[];
     sentiment: number;
     analysis: string;
+    trends: string;
     goals: string[];
     questions: string[];
   };
@@ -30,6 +32,7 @@ const AnalysisTab: React.FC<AnalysisTabProps> = ({ entry }) => (
       </div>
     </section>
     <AnalysisCard entry={entry} />
+    <TrendsCard entry={entry} />
     <QuestionsCard entry={entry} />
     <GoalsCard entry={entry} />
   </TabsContent>

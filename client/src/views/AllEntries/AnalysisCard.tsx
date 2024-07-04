@@ -11,7 +11,7 @@ const AnalysisCard: React.FC<AnalysisCardProps> = ({ entry }) => (
     <h4 className="leading-7 scroll-m-20 text-2xl font-semibold tracking-tight">
       Analysis
     </h4>
-    <p className="my-1 leading-7 whitespace-pre-wrap">{entry.analysis}...</p>
+    <p className="my-1 leading-7 whitespace-pre-wrap">{entry.analysis}</p>
   </div>
 );
 

@@ -12,6 +12,7 @@ const EntrySchema: Schema = new Schema({
     summary: { type: String, required: true },
     quote: { type: String, required: true }
   }],
+  trends: { type: [String], default: [] },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
