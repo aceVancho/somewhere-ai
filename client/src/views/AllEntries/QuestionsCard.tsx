@@ -11,11 +11,9 @@ const QuestionsCard: React.FC<QuestionsCardProps> = ({ entry }) => (
     <h4 className="leading-7 scroll-m-20 text-2xl font-semibold tracking-tight">
       Questions
     </h4>
-    {entry.questions.map((q, index) => (
-      <p key={index} className="my-1 leading-7">
-        {q}
-      </p>
-    ))}
+    <ul className="list-disc [&>li]:mt-2">
+    {entry.questions.map((q, index) => (<li key={index} className="m-1 leading-7">{q}</li>))}
+    </ul>
   </div>
 );
 

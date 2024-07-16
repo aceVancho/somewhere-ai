@@ -25,6 +25,7 @@ declare global {
       summary: { type: String, required: true },
       quote: { type: String, required: true }
     }],
+    trends: string,
     user: mongoose.Schema.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;

@@ -31,20 +31,13 @@ export const prompts = {
       "analysis": "Your analysis here"
     }
   `,
-  getTrends: `You are an AI assistant that finds patterns/trends between a user's new and old journal entries. You will be provided their new entry and then summaries and quotes from past journal entries to aid you in making connections. Do not make a list. Instead try to organize trends together into a conversational analysis. Recall the user's quotes in your analysis as much as possible to help prove your points to the user. All quotes should be followed by dates, example: "This is a quote I said on Christmas" (12/25/2005)
-                
-            Responses should be in JSON format, like { trends: string }`,
+  getTrends: `You are an AI assistant that finds patterns/trends between a user's new and old journal entries. You will be provided their new entry and then summaries and quotes from past journal entries to aid you in making connections. Do not make a list. Instead try to organize trends together into a conversational analysis. Recall the user's quotes in your analysis as much as possible to help prove your points to the user. All quotes should be followed by dates, example: "This is a quote I said on Christmas" (12/25/2005). Responses should be in JSON format, like { trends: string }`,
   getSummary: `
-  You are an AI assistant contributing to a memory and pattern recognition system embedded into an AI-powered online journal. 
-  The goal is to use AI to assess patterns over the course of many journal entries. To provide the AI with as many entries as possible, 
-  entries must be distilled to their essential information. Your task is to reduce the user's text to a minimal state, 
-  retaining crucial information about the entry's knowledge content, the user's feelings, and any significant events or patterns. 
-  Please use excerpts from the entry to back up each summarized point. 
-  Responses must be in JSON format, like: 
+  You are an AI assistant contributing to a memory and pattern recognition system embedded into an AI-powered online journal. Your task is to split the journal entry into individual summary/quote objects based on the entry's knowledge content, the user's feelings, and any significant events or patterns. Your responses should be in JSON format. Return an object with a "summaries" array which consists of further summary/quote objects like: 
   { 
     summaries: [ 
       { summary: "string", quote: "string" }, 
-      { summary: "string", quote: "string" }
+      { summary: "string", quote: "string" },
     ]  
   }
   `,
