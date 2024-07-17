@@ -3,6 +3,7 @@ import { useContainerContext } from '../contexts/containerContext';
 import AllEntries from '../views/AllEntries/AllEntries';
 import { useAuth } from '@/contexts/authContext';
 import NewEntry from '../views/NewEntry/NewEntry';
+import Profile from '@/views/Profile/Profile';
 
 // Replace anonymous functions with real components
 const containerComponentMap: { [key: string]: React.FC } = {
@@ -21,7 +22,8 @@ const containerComponentMap: { [key: string]: React.FC } = {
     <div className='bg-primary w-full text-white lg:flex lg:items-center lg:justify-center h-full hidden'>
         <p>Put your animation or picture here.</p>
     </div>
-  )
+  ),
+  PROFILE: Profile
 };
 
 export const MainContainer: React.FC = () => {

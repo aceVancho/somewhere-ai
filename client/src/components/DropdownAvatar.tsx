@@ -10,6 +10,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuth } from '../contexts/authContext';
 import { useToast } from './ui/use-toast';
+import { useContainerContext } from '@/contexts/containerContext';
 
 async function hashEmail(email: string) {
     const normalizedEmail = email.trim().toLowerCase();
@@ -49,6 +50,8 @@ const DropdownAvatar: React.FC = () => {
         }
     }
 
+    const { setSelectedContainer } = useContainerContext();
+
     return (
         <Avatar id="dropdownAvatar" className="shadow-lg">
             <DropdownMenu>
@@ -59,7 +62,7 @@ const DropdownAvatar: React.FC = () => {
                 <DropdownMenuContent>
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>Profile</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSelectedContainer("PROFILE")}>Profile</DropdownMenuItem>
                     <DropdownMenuItem>Settings</DropdownMenuItem>
                     <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
                 </DropdownMenuContent>
