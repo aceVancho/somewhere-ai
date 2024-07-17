@@ -3,6 +3,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Accordion } from "@/components/ui/accordion";
 import Entry from "./Entry";
 import { useEntryContext } from "../../contexts/entryContext";
+import { useContainerContext } from "@/contexts/containerContext";
+import { Button } from "@/components/ui/button"
 
 interface IEntry {
   _id: string;
@@ -48,6 +50,24 @@ const AllEntries: React.FC = () => {
 
     fetchEntries();
   }, [setEntries]);
+
+  const { setSelectedContainer } = useContainerContext();
+
+  if (entries.length === 0) {
+    return (
+      <div className="flex justify-center items-center h-2/4">
+        <div className="flex flex-col justify-center items-center">
+          <h1 className="text-2xl font-semibold mb-2">Nothing to see here.</h1>
+          <Button 
+            className="text-2xl font-semibold text-primary"
+            onClick={() => setSelectedContainer("NEW_ENTRY")}
+            variant="link">
+            Write more
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   if (loading) {
     return (

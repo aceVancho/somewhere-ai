@@ -3,6 +3,7 @@ import Entry from '../models/Entry';
 import { upsert } from '../api/upsert';
 import { Pinecone } from '@pinecone-database/pinecone';
 import CompletionHandler from '../api/completionHandler';
+import SessionHandler from '../api/sessionHandler';
 
 const startTransaction = async () => {
   const session = await Entry.startSession();
@@ -103,25 +104,29 @@ export const updateEntry = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
-// TODO: Needs to also delete Zep Conversation History
 export const deleteEntry = async (req: Request, res: Response): Promise<void> => {
   const session = await startTransaction();
 
   try {
+    // Delete Mongoose Record
     const entry = await Entry.findByIdAndDelete(req.params.id, { session });
-
+    
     if (!entry) {
       await abortTransaction(session);
       res.status(404).json({ error: 'Journal entry not found' });
       return;
     }
+    
+    // Delete Zep Session
+    SessionHandler.deleteChain(req.params.id)
 
+    // Delete Pinecone Records
     const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
     const index = pc.index(process.env.PINECONE_INDEX!);
 
     const results = await index.namespace(entry.user.toString()).listPaginated({ prefix: `${req.params.id}#` });
     const vectorIds = results.vectors?.map((vector) => vector.id).filter((v): v is string => v !== undefined);
-    console.log(vectorIds)
+
     if (vectorIds && vectorIds.length > 0) {
       await index.namespace(entry.user.toString()).deleteMany(vectorIds);
     }

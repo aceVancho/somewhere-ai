@@ -32,6 +32,7 @@ class SessionHandler {
 
   async initZepClient(zepApiKey: string): Promise<void> {
     try {
+        console.log(zepApiKey)
         SessionHandler.zepClient = await ZepClient.init(zepApiKey);
       console.log("ZepClient initialized successfully");
     } catch (error) {
@@ -129,7 +130,14 @@ class SessionHandler {
     return this.sessionChains.get(sessionId);
   }
 
-  public deleteChain(sessionId: string): void {
+  public async deleteChain(sessionId: string): Promise<void> {
+    try {
+      await SessionHandler.zepClient?.memory.deleteMemory(sessionId)
+      this.sessionChains.delete(sessionId)
+    } catch (e) { console.error(e); }
+  }
+
+  public async removeChain(sessionId: string) {
     if (this.sessionChains.delete(sessionId)) {
         console.log(`Chain with id:${sessionId} successfully removed.`)
     } else {

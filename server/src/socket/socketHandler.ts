@@ -70,7 +70,7 @@ class SocketHandler {
     }
 
     private handleDisconnect(socket: Socket) {
-        this.SessionHandler.deleteChain(socket.data.sessionId);
+        this.SessionHandler.removeChain(socket.data.sessionId);
         console.log('Client disconnected');
     }
 }

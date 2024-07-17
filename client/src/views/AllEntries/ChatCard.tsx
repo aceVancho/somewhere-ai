@@ -130,7 +130,7 @@ const ChatCard: React.FC<EntryProps> = ({ entry }) => {
         className={`m-2 ${msg.type} ${
           msg.type === "ai"
             ? "bg-muted text-left"
-            : "bg-primary text-right"
+            : "bg-primary text-white text-right"
         }`}
       >
         <CardHeader>
