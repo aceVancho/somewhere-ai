@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { CornerDownLeft, Mic, Paperclip } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -12,15 +12,16 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/authContext";
 import { useContainerContext } from "@/contexts/containerContext";
+import { io, Socket } from "socket.io-client";
 
 export default function NewEntry() {
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
-  const {setSelectedContainer} = useContainerContext()
+  const { setSelectedContainer } = useContainerContext();
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
   const [loading, setLoading] = useState<boolean>(false);
-
+  const socketRef = useRef<Socket | null>(null);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -32,7 +33,24 @@ export default function NewEntry() {
         title: "Not authenticated",
         description: "You need to be logged in to create an entry.",
       });
+      setLoading(false);
       return;
+    }
+
+    if (!socketRef.current) {
+      const newEntrySocketOptions = { auth: { token: localStorage.getItem("somewhereAIToken") } };
+      socketRef.current = io('http://localhost:4001', newEntrySocketOptions);
+
+      socketRef.current.on('connect', () => {
+        console.log('newEntrySocket connected to meGPT Server.');
+        socketRef.current?.emit('newEntry', { email: user.email });
+      });
+
+      socketRef.current.on('disconnect', () => {
+        console.log('Socket disconnected.');
+      });
+    } else {
+      socketRef.current.emit('newEntry', { email: user.email });
     }
 
     try {
@@ -52,7 +70,7 @@ export default function NewEntry() {
         });
         setTitle("");
         setText("");
-        setSelectedContainer('ALL_ENTRIES')
+        setSelectedContainer('ALL_ENTRIES');
       } else {
         const errorData = await response.json();
         throw new Error(errorData.message || "Error creating entry");
@@ -73,7 +91,7 @@ export default function NewEntry() {
     return (
       <div id="newEntryLoading" className="h-1/2 flex items-center justify-center">
         <div className="flex flex-col items-center">
-          <h2 className=" font-medium text-xl text-muted-foreground mb-3">Just a sec.</h2>
+          <h2 className="font-medium text-xl text-muted-foreground mb-3">Just a sec.</h2>
           <div className="spinner flex gap-1">
             <div className="rect1"></div>
             <div className="rect2"></div>
@@ -83,7 +101,7 @@ export default function NewEntry() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (

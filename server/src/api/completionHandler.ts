@@ -4,6 +4,7 @@ import OpenAI from "openai";
 import { prompts } from "./prompts";
 import Entry from "../models/Entry";
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
+import { io, Socket } from"socket.io-client"
 dotenv.config({ path: path.resolve("../.env") });
 
 interface SummaryItem {
@@ -15,33 +16,27 @@ interface SummaryResponse {
   summaries: SummaryItem[];
 }
 
-interface MetadataOptions {
-  title: string;
-}
-
 const openai = new OpenAI();
 const model = process.env.OPEN_AI_CHAT_MODEL!;
 
 class CompletionHandler {
-  private static instance: CompletionHandler;
   private static model = process.env.OPEN_AI_CHAT_MODEL!;
+  private socket: Socket
 
-  constructor() {}
-
-  public static getInstance(): CompletionHandler {
-    if (!CompletionHandler.instance) {
-      CompletionHandler.instance = new CompletionHandler();
-    }
-    return CompletionHandler.instance;
+  constructor(authToken: string) {
+    this.socket = io("http://localhost:4001", { auth: { token: authToken }})
+    this.socket.on('connect', () => console.log('Completion Handler connected to socket.'))
   }
 
-  public async getTitle(text: string): Promise<{ title: string }> {
+  public async getTitle(entry: IEntry): Promise<{ title: string }> {
     console.log("1: Generating title.")
+    if (entry.title) return { title: entry.title }
+
     try {
       const completion = await openai.chat.completions.create({
         messages: [
           { role: "system", content: prompts.getTitle },
-          { role: "user", content: `Entry: ${text}` },
+          { role: "user", content: `Entry: ${entry.text}` },
         ],
         model,
         temperature: .8,
@@ -123,6 +118,7 @@ class CompletionHandler {
   }
 
   public async getGoals(text: string): Promise<{ goals: string[] }> {
+
     console.log("3: Generating goals.")
     try {
       const completion = await openai.chat.completions.create({
@@ -203,7 +199,6 @@ class CompletionHandler {
         });
   
         const response = completion?.choices[0]?.message?.content;
-        console.log('%%%', response);
   
         if (!response) {
           throw new Error('OpenAI API returned an empty response');
@@ -369,7 +364,6 @@ class CompletionHandler {
 
   public async createEntryMetadata(
     entry: IEntry,
-    options: MetadataOptions
   ): Promise<{
     title: string;
     tags: string[];
@@ -380,22 +374,46 @@ class CompletionHandler {
     summaries: SummaryItem[];
     trends: string;
   }> {
+    this.socket.emit('newEntryProgress', { progress: 69, email: entry.user });
+  
     try {
-      const title = options.title
-      ? options.title
-      : await this.getTitle(entry.text).then((res) => res.title);
-      const tags = await this.getTags(entry.text).then((res) => res.tags);
-      const goals = await this.getGoals(entry.text).then((res) => res.goals);
-      const questions = await this.getQuestions(entry.text).then(
-        (res) => res.questions
-      );
-      const analysis = await this.getAnalysis(entry.text).then((res) => res.analysis);
-      const summaries = await this.getSummary(entry.text).then(
-        (res) => res.summaries
-      );
-      const trends = await this.getTrends(entry).then((res) => res.trends);
-      const sentiment = await this.getSentimentScore(entry.text).then((res) => res)
-
+      const titlePromise = this.getTitle(entry);
+      const tagsPromise = this.getTags(entry.text);
+      const goalsPromise = this.getGoals(entry.text);
+      const questionsPromise = this.getQuestions(entry.text);
+      const analysisPromise = this.getAnalysis(entry.text);
+      const summariesPromise = this.getSummary(entry.text);
+      const trendsPromise = this.getTrends(entry);
+      const sentimentPromise = this.getSentimentScore(entry.text);
+  
+      const [
+        titleResponse,
+        tagsResponse,
+        goalsResponse,
+        questionsResponse,
+        analysisResponse,
+        summariesResponse,
+        trendsResponse,
+        sentiment,
+      ] = await Promise.all([
+        titlePromise,
+        tagsPromise,
+        goalsPromise,
+        questionsPromise,
+        analysisPromise,
+        summariesPromise,
+        trendsPromise,
+        sentimentPromise,
+      ]);
+  
+      const title = titleResponse.title;
+      const tags = tagsResponse.tags;
+      const goals = goalsResponse.goals;
+      const questions = questionsResponse.questions;
+      const analysis = analysisResponse.analysis;
+      const summaries = summariesResponse.summaries;
+      const trends = trendsResponse.trends;
+  
       return {
         title,
         tags,
@@ -411,7 +429,8 @@ class CompletionHandler {
       throw new Error("Failed to create entry metadata");
     }
   }
+  
 }
 
 dotenv.config({ path: path.resolve("../.env") });
-export default CompletionHandler.getInstance();
+export default CompletionHandler;

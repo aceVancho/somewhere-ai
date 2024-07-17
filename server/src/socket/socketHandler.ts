@@ -6,6 +6,7 @@ import Entry from '../models/Entry';
 class SocketHandler {
     private io: SocketIOServer;
     private SessionHandler: typeof SessionHandler
+    private newEntryProgressMap: Map<string, number>
 
     constructor(server: any) {
         this.io = new SocketIOServer(server, {
@@ -18,12 +19,26 @@ class SocketHandler {
         this.io.use(socketAuthMiddleware);
         this.io.on('connection', this.handleConnection.bind(this));
         this.SessionHandler = SessionHandler
+        this.newEntryProgressMap = new Map()
     }
 
     private handleConnection(socket: Socket) {
         socket.on('joinSession', this.handleJoinSession.bind(this, socket));
         socket.on('message', this.handleMessage.bind(this, socket));
         socket.on('disconnect', this.handleDisconnect.bind(this, socket));
+        socket.on('newEntry', this.handleNewEntry.bind(this, socket))
+        socket.on('newEntryProgress', this.handleProgress.bind(this, socket))
+    }
+
+    private async handleNewEntry(socket: Socket, data: { email: string}) {
+        const { email } = data;
+        console.log(`New entry from ${email}`)
+        this.newEntryProgressMap.set(email, 0)
+    }
+
+    private async handleProgress(socket: Socket, data: { progress: number, email: string }) {
+        const { progress, email } = data;
+        console.log('Progress made: ', progress)
     }
 
     private async handleJoinSession(socket: Socket, data: { sessionId: string, email: string }) {

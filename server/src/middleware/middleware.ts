@@ -28,6 +28,7 @@ export const socketAuthMiddleware = async (socket: any, next: (err?: Error) => v
     const token = socket.handshake.auth.token;
 
     if (!token) {
+        console.error('Authorization required.')
         return next(new Error('Authorization required.'));
     }
 
@@ -35,11 +36,13 @@ export const socketAuthMiddleware = async (socket: any, next: (err?: Error) => v
         const decoded: any = jwt.verify(token, process.env.SOMEWHERE_JWT_SECRET as string);
         const user = await User.findById(decoded.userId);
         if (!user) {
+            console.error('User not found.')
             return next(new Error('User not found.'));
         }
         socket.user = user;
         next();
     } catch (error) {
+        console.error('Invalid token.')
         next(new Error('Invalid token.'));
     }
 };

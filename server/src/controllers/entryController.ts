@@ -22,16 +22,19 @@ const abortTransaction = async (session: any) => {
 
 export const createEntry = async (req: Request, res: Response): Promise<void> => {
   const session = await startTransaction();
-
+  
   try {
+    let { authorization: authToken } = req.headers
+    if (!authToken) throw new Error('User not logged in.')
+    authToken = authToken?.split(' ')[1]
+
     const { text, title } = req.body;
     const userId = req.user.id;
     const date = new Date().toLocaleString();
-
-    const newEntry = new Entry({ text, user: userId });
-
     
-    const metadata = await CompletionHandler.createEntryMetadata(newEntry, { title });
+    const newEntry = new Entry({ text, title, user: userId });
+    const completionHandler = new CompletionHandler(authToken)
+    const metadata = await completionHandler.createEntryMetadata(newEntry);
     
     newEntry.set(metadata);
     await newEntry.save({ session });
