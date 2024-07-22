@@ -98,14 +98,25 @@ class SessionHandler {
       console.error('Error creating user:', error);
     }
   }
+
+  private async updateConversation(sessionId: string) {
+    let memory;
+
+    try {
+      memory = await SessionHandler.zepClient!.memory.getMemory(sessionId)
+    } catch (e) { console.error(e); }
+
+    // TODO: Use memory facts and/or user messages to upsert Pinecone DB
+    console.log(memory?.facts)
+  }
   
   public async createChain(entry: IEntry): Promise<RunnableWithMessageHistory<any, any>> {
     const { id: sessionId, user, tags, title, text } = entry;
 
     try {
       // Attempt to retrieve the session
-      await SessionHandler.zepClient!.memory.getSession(sessionId);
-      console.log('Fetching existing session...')
+      const session = await SessionHandler.zepClient!.memory.getSession(sessionId);
+      console.log('Found existing session...', session)
   } catch (error) {
       console.error('No session exists. Adding new session...')
       // If session does not exist, create a new one
@@ -140,6 +151,7 @@ class SessionHandler {
   public async removeChain(sessionId: string) {
     if (this.sessionChains.delete(sessionId)) {
         console.log(`Chain with id:${sessionId} successfully removed.`)
+        this.updateConversation(sessionId);
     } else {
         console.error(`Could not remove chain with id:${sessionId}. Not found.`)
     }
