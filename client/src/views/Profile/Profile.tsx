@@ -2,9 +2,12 @@ import { useToast } from "@/components/ui/use-toast";
 import { useEntryContext } from "@/contexts/entryContext";
 import { useEffect, useState } from "react";
 import DeleteAllEntriesBtn from "./DeleteAllEntriesBtn";
+import { useAuth } from "@/contexts/authContext";
+import { Button } from "@/components/ui/button"
 
 const Profile: React.FC = () => {
   const { entries, setEntries } = useEntryContext();
+  const { user } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -66,10 +69,29 @@ const Profile: React.FC = () => {
     }
   };
 
+  const handlePasswordResetRequest = async () => {
+    console.log(user)
+    try {
+      fetch(`http://localhost:4001/api/users/passwordreset/${user?._id}`, {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("somewhereAIToken")}`,
+        },
+      })
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   return (
-    <div>
-      <p>Profile Stuff</p>
-      <DeleteAllEntriesBtn deleteAllEntries={handleDeleteAllEntries}/>
+    <div className="flex flex-col items-center justify-evenly h-2/4">
+      <h1>Profile</h1>
+      <div className="flex flex-col items-center">
+        <div>{user?.email}</div>
+        <Button variant='link' onClick={handlePasswordResetRequest}>Request Password Reset</Button>
+        <DeleteAllEntriesBtn deleteAllEntries={handleDeleteAllEntries}/>
+      </div>
     </div>
   );
 };
