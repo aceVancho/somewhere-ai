@@ -11,6 +11,11 @@ declare global {
     email: string;
     password: string;
     createdAt: Date;
+    passwordReset: {
+      token: string
+      expiration: number,
+      url: string
+    }
   }
 
   interface IEntry extends mongoose.Document {

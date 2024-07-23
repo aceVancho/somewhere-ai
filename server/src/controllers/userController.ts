@@ -3,6 +3,7 @@ import User from "../models/Users";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
+import crypto from 'crypto';
 
 const nodemailer = require("nodemailer");
 
@@ -122,7 +123,7 @@ export const verify = async (req: Request, res: Response) => {
   }
 };
 
-export const passwordReset = async (req: Request, res: Response) => {
+export const requestPasswordReset = async (req: Request, res: Response) => {
 
   const transporter = nodemailer.createTransport({
     host: "smtp.ethereal.email",
@@ -134,25 +135,45 @@ export const passwordReset = async (req: Request, res: Response) => {
     },
   });
 
-  const sendPasswordResetEmail = async (user: IUser) => {
+  const sendPasswordResetEmail = async (user: IUser, passwordResetUrl: string) => {
     try {
       await transporter.sendMail({
         from: `${process.env.ETHEREAL_FULL_NAME} < ${process.env.ETHEREAL_EMAIL_ADDRESS}>`, // sender address
         to: user.email, // list of receivers
         subject: "meGPT Password Reset", // Subject line
         text: "Hiya! It looks like you want to reset your password?", // plain text body
-        html: "<b>Hiya! It looks like you want to reset your password?</b>", // html body
+        html: `
+        <div style="display: flex; justify-content: center; align-items: flex-start; height: 100vh; width: 100vw; box-sizing: border-box; padding: 20px; background-color: #000;">
+          <div style="text-align: center; width: 100%;">
+            <h1 style="color: #fff;">Reset your password</h1>
+            <p style="color: #fff;">Hiya! It looks like you want to reset your password. Click the link below to reset it:</p>
+            <a href="${passwordResetUrl}" style="display: inline-block; margin-top: 20px; padding: 10px 20px; color: white; background-color: #007bff; text-decoration: none; border-radius: 5px;">Reset Password</a>
+          </div>
+        </div>
+      `, // html body
       });
     } catch (error) {
       console.error(error);
     }
   };
 
+  const passwordResetToken = crypto.randomBytes(32).toString('hex')
+  const passwordResetTokenExpiration = Date.now() + 3600000;
+  const passwordResetUrl = `http://localhost:4001/passwordreset?token=${passwordResetToken}`
+
+
   try {
     const user = await User.findById(req.user._id); // Note the use of _id
     if (!user) return res.status(404).json({ message: "User not found." });
 
-    sendPasswordResetEmail(user);
+    user.passwordReset.token = passwordResetToken;
+    user.passwordReset.expiration = passwordResetTokenExpiration;
+    user.passwordReset.url = passwordResetUrl;
+
+    await user.save();
+    sendPasswordResetEmail(user, passwordResetUrl);
+
+    console.log('user after save', user)
 
     return res.status(200).json({ message: "Password Reset Successfully" });
   } catch (error) {

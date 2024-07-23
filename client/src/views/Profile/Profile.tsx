@@ -72,7 +72,7 @@ const Profile: React.FC = () => {
   const handlePasswordResetRequest = async () => {
     console.log(user)
     try {
-      fetch(`http://localhost:4001/api/users/passwordreset/${user?._id}`, {
+      fetch(`http://localhost:4001/api/users/requestPasswordReset/${user?._id}`, {
         method: 'POST',
         headers: {
           "Content-Type": "application/json",
