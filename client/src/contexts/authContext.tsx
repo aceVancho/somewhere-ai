@@ -39,10 +39,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
 
       const data = await response.json();
-
+      console.log('signUp:', { data });
       if (response.ok) {
         localStorage.setItem("somewhereAIToken", data.token);
-        setUser({ email: data.email });
+        setUser(data);
       } else {
         throw new Error(data.message || 'Failed to sign up');
       }
@@ -65,9 +65,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
   
       const data = await response.json();
+      console.log('login:', { data });
       if (response.ok) {
         localStorage.setItem("somewhereAIToken", data.token);
-        setUser({ email: data.user.email });
+        setUser(data.user);
       } else {
         console.error(data.message);
         throw new Error(data.message);
@@ -94,7 +95,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
 
       const data = await response.json();
-      console.log({data})
+      console.log('verify:', { data });
       if (response.ok) {
         setUser(data.user);
       } else {

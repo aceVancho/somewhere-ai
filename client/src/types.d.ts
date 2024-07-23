@@ -1,8 +1,10 @@
 
 declare global {
   interface IUser {
-      email: string;
-      password?: string;
+    _id: string;
+    email: string;
+    password?: string;
+    createdAt?: string;
   }
   
   interface IAuthContextType {
