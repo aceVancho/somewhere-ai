@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useAuth } from "../contexts/authContext";
 import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -38,6 +38,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ switchToSignUp }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -58,6 +59,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ switchToSignUp }) => {
           title: `👋 Welcome back, ${username}!`,
           description: "You've logged in successfully.",
         });
+        navigate('/all-entries')
       } catch (error: any) {
         console.error(error.message);
         document.getElementById('password')?.classList.add('animate__shakeX')

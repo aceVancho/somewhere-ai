@@ -10,7 +10,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuth } from '../contexts/authContext';
 import { useToast } from './ui/use-toast';
-import { useContainerContext } from '@/contexts/containerContext';
+import { useNavigate } from 'react-router-dom';
 
 async function hashEmail(email: string) {
     const normalizedEmail = email.trim().toLowerCase();
@@ -25,6 +25,7 @@ async function hashEmail(email: string) {
 const DropdownAvatar: React.FC = () => {
     const { user, logout } = useAuth();
     const [gravatarHash, setGravatarHash] = useState('');
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (user) hashEmail(user.email).then(hashedEmail => setGravatarHash(hashedEmail));
@@ -50,8 +51,6 @@ const DropdownAvatar: React.FC = () => {
         }
     }
 
-    const { setSelectedContainer } = useContainerContext();
-
     return (
         <Avatar id="dropdownAvatar" className="shadow-lg">
             <DropdownMenu>
@@ -62,7 +61,7 @@ const DropdownAvatar: React.FC = () => {
                 <DropdownMenuContent>
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => setSelectedContainer("PROFILE")}>Profile</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/profile")}>Profile</DropdownMenuItem>
                     <DropdownMenuItem>Settings</DropdownMenuItem>
                     <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
                 </DropdownMenuContent>

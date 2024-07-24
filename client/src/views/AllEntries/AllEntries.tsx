@@ -3,8 +3,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Accordion } from "@/components/ui/accordion";
 import Entry from "./Entry";
 import { useEntryContext } from "../../contexts/entryContext";
-import { useContainerContext } from "@/contexts/containerContext";
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
+import NavPanel from "@/components/NavPanel";
+import { useNavigate } from "react-router-dom";
 
 interface IEntry {
   _id: string;
@@ -23,6 +24,7 @@ const AllEntries: React.FC = () => {
   const { entries, setEntries } = useEntryContext();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchEntries = async () => {
@@ -51,22 +53,21 @@ const AllEntries: React.FC = () => {
     fetchEntries();
   }, [setEntries]);
 
-  const { setSelectedContainer } = useContainerContext();
-
   if (entries.length === 0) {
     return (
       <div className="flex justify-center items-center h-2/4">
         <div className="flex flex-col justify-center items-center">
           <h1 className="text-2xl font-semibold mb-2">Nothing to see here.</h1>
-          <Button 
+          <Button
             className="text-2xl font-semibold text-primary"
-            onClick={() => setSelectedContainer("NEW_ENTRY")}
-            variant="link">
+            onClick={() => navigate('/new-entry')}
+            variant="link"
+          >
             Write more
           </Button>
         </div>
       </div>
-    )
+    );
   }
 
   if (loading) {
@@ -84,18 +85,19 @@ const AllEntries: React.FC = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col items-center w-full overflow-y-auto">
-      <Accordion type="multiple" className="w-5/6">
-        {entries
-          .sort(
-            (a, b) =>
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          )
-          .map((entry) => (
-            <Entry key={entry._id} entry={entry} />
-          ))}
-      </Accordion>
-    </div>
+      <div className="h-screen flex flex-col items-center w-full overflow-y-auto">
+        <Accordion type="multiple" className="w-5/6">
+          {entries
+            .sort(
+              (a, b) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime()
+            )
+            .map((entry) => (
+              <Entry key={entry._id} entry={entry} />
+            ))}
+        </Accordion>
+      </div>
   );
 };
 

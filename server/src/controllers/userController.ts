@@ -8,6 +8,7 @@ import crypto from 'crypto';
 const nodemailer = require("nodemailer");
 
 export const register = async (req: Request, res: Response) => {
+  console.log('...1', req.body.email, req.body.password)
   try {
     const existingUser = await User.findOne({ email: req.body.email });
     if (existingUser) {
@@ -124,7 +125,6 @@ export const verify = async (req: Request, res: Response) => {
 };
 
 export const requestPasswordReset = async (req: Request, res: Response) => {
-
   const transporter = nodemailer.createTransport({
     host: "smtp.ethereal.email",
     port: 587,
@@ -166,9 +166,11 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
     const user = await User.findById(req.user._id); // Note the use of _id
     if (!user) return res.status(404).json({ message: "User not found." });
 
-    user.passwordReset.token = passwordResetToken;
-    user.passwordReset.expiration = passwordResetTokenExpiration;
-    user.passwordReset.url = passwordResetUrl;
+    user.passwordReset = {
+      token: passwordResetToken,
+      expiration: passwordResetTokenExpiration,
+      url: passwordResetUrl
+    };
 
     await user.save();
     sendPasswordResetEmail(user, passwordResetUrl);

@@ -93,7 +93,7 @@ const Profile: React.FC = () => {
   }
 
   return (
-    <div className="w-screen flex justify-center mt-5">
+    <div className="flex h-4/5 justify-center items-center">
       <Card className="w-[350px]">
         <CardHeader>
           <CardTitle>Profile</CardTitle>

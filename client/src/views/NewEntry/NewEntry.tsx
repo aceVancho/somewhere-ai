@@ -11,17 +11,17 @@ import {
 } from "@/components/ui/tooltip";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/authContext";
-import { useContainerContext } from "@/contexts/containerContext";
 import { io, Socket } from "socket.io-client";
+import { useNavigate } from "react-router-dom";
 
 export default function NewEntry() {
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
-  const { setSelectedContainer } = useContainerContext();
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
   const [loading, setLoading] = useState<boolean>(false);
   const socketRef = useRef<Socket | null>(null);
+  const navigate = useNavigate();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -70,7 +70,7 @@ export default function NewEntry() {
         });
         setTitle("");
         setText("");
-        setSelectedContainer('ALL_ENTRIES');
+        navigate('/all-entries')
       } else {
         const errorData = await response.json();
         throw new Error(errorData.message || "Error creating entry");
@@ -105,10 +105,9 @@ export default function NewEntry() {
   }
 
   return (
-    <div className="flex items-start justify-center h-full py-5">
       <form
         onSubmit={handleSubmit}
-        className="w-11/12 h-full rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring overflow-y-auto p-5 flex flex-col"
+        className="my-5 w-11/12 h-full rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring overflow-y-auto p-5 flex flex-col"
       >
         <Label htmlFor="title" className="sr-only">
           Title
@@ -157,6 +156,5 @@ export default function NewEntry() {
           </Button>
         </div>
       </form>
-    </div>
   );
 }

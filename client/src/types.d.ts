@@ -7,12 +7,13 @@ declare global {
     createdAt?: string;
   }
   
+  type SignUpParams = Pick<IUser, 'email' | 'password'>
   interface IAuthContextType {
       user: IUser | null;
       isAuthenticated: boolean;
-      login: (user: IUser) => Promise<void>;
+      login: (userData: SignUpParams) => Promise<void>;
       logout: () => void;
-      signUp: (user: IUser) => Promise<void>;
+      signUp: (userData: SignUpParams) => Promise<void>;
       loading: boolean;
   }
   interface IEntry {

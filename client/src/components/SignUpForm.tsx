@@ -17,6 +17,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom";
 
 const FormSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -36,6 +37,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ switchToLogin }) => {
     const { toast } = useToast();
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+  const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -57,6 +59,7 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ switchToLogin }) => {
           title: `🎉 Welcome, ${username}!`,
           description: "Your account has been created successfully.",
         });
+        navigate('/all-entries');
       } catch (error: any) {
         toast({
           variant: "destructive",

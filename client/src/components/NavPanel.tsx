@@ -20,11 +20,12 @@ import {
   SheetTrigger,
   SheetClose,
 } from "@/components/ui/sheet";
-import { useContainerContext } from "../contexts/containerContext";
 import { Separator } from "./ui/separator";
+import { useNavigate } from "react-router-dom";
 
 const MobileEntriesGroup = () => {
-  const { setSelectedContainer } = useContainerContext();
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col">
       <div className="my-1">
@@ -34,7 +35,7 @@ const MobileEntriesGroup = () => {
       <SheetClose className="hover:bg-secondary hover:text-foreground">
         <div
           className="flex items-center gap-4 m-2 text-sm"
-          onClick={() => setSelectedContainer("ALL_ENTRIES")}
+          onClick={() => navigate("all-entries")}
         >
           <Folder className="mr-2 h-4 w-4" />
           All Entries
@@ -43,7 +44,7 @@ const MobileEntriesGroup = () => {
       <SheetClose className="hover:bg-secondary hover:text-foreground">
         <div
           className="flex items-center gap-4 m-2 text-sm"
-          onClick={() => setSelectedContainer("NEW_ENTRY")}
+          onClick={() => navigate("new-entry")}
         >
           <Plus className="mr-2 h-4 w-4" />
           New Entry
@@ -54,7 +55,8 @@ const MobileEntriesGroup = () => {
 };
 
 const MobileAIGroup = () => {
-  const { setSelectedContainer } = useContainerContext();
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col">
       <Separator className="mt-2" />
@@ -62,7 +64,7 @@ const MobileAIGroup = () => {
       <SheetClose className="hover:bg-secondary hover:text-foreground">
         <div
           className="flex items-center gap-4 m-2 text-sm"
-          onClick={() => setSelectedContainer("CHAT")}
+          onClick={() => console.log("CHAT")}
         >
           <ChatBubbleIcon className="mr-2 h-4 w-4" />
           Chat
@@ -71,7 +73,7 @@ const MobileAIGroup = () => {
       <SheetClose className="hover:bg-secondary hover:text-foreground">
         <div
           className="flex items-center gap-4 m-2 text-sm"
-          onClick={() => setSelectedContainer("STATS")}
+          onClick={() => console.log("STATS")}
         >
           <BarChart4 className="mr-2 h-4 w-4" />
           Stats
@@ -80,7 +82,7 @@ const MobileAIGroup = () => {
       <SheetClose className="hover:bg-secondary hover:text-foreground">
         <div
           className="flex items-center gap-4 m-2 text-sm"
-          onClick={() => setSelectedContainer("TOOLS")}
+          onClick={() => console.log("TOOLS")}
         >
           <Hammer className="mr-2 h-4 w-4" />
           Tools
@@ -91,7 +93,8 @@ const MobileAIGroup = () => {
 };
 
 const MobileLinksGroup = () => {
-  const { setSelectedContainer } = useContainerContext();
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col">
       <Separator className="my-1" />
@@ -99,7 +102,7 @@ const MobileLinksGroup = () => {
       <SheetClose className="hover:bg-secondary hover:text-foreground">
         <div
           className="flex items-center gap-4 m-2 text-sm"
-          onClick={() => setSelectedContainer("ABOUT")}
+          onClick={() => console.log("ABOUT")}
         >
           <Store className="mr-2 h-4 w-4" />
           About
@@ -108,7 +111,7 @@ const MobileLinksGroup = () => {
       <SheetClose className="hover:bg-secondary hover:text-foreground">
         <div
           className="flex items-center gap-4 m-2 text-sm"
-          onClick={() => setSelectedContainer("CONTACT")}
+          onClick={() => console.log("CONTACT")}
         >
           <LucideNotebookTabs className="mr-2 h-4 w-4" />
           Contact
@@ -117,7 +120,7 @@ const MobileLinksGroup = () => {
       <SheetClose className="hover:bg-secondary hover:text-foreground">
         <div
           className="flex items-center gap-4 m-2 text-sm"
-          onClick={() => setSelectedContainer("DONATE")}
+          onClick={() => console.log("DONATE")}
         >
           <Gift className="mr-2 h-4 w-4" />
           Donate
@@ -128,7 +131,8 @@ const MobileLinksGroup = () => {
 };
 
 const DesktopEntriesGroup = () => {
-  const { setSelectedContainer } = useContainerContext();
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col">
       <div className="my-1">
@@ -138,7 +142,7 @@ const DesktopEntriesGroup = () => {
       <div className="hover:bg-secondary hover:text-foreground">
         <div
           className="flex items-center gap-4 m-2 text-sm"
-          onClick={() => setSelectedContainer("ALL_ENTRIES")}
+          onClick={() => navigate("all-entries")}
         >
           <Folder className="mr-2 h-4 w-4" />
           All Entries
@@ -147,7 +151,7 @@ const DesktopEntriesGroup = () => {
       <div className="hover:bg-secondary hover:text-foreground">
         <div
           className="flex items-center gap-4 m-2 text-sm"
-          onClick={() => setSelectedContainer("NEW_ENTRY")}
+          onClick={() => navigate("new-entry")}
         >
           <Plus className="mr-2 h-4 w-4" />
           New Entry
@@ -158,7 +162,8 @@ const DesktopEntriesGroup = () => {
 };
 
 const DesktopAIGroup = () => {
-  const { setSelectedContainer } = useContainerContext();
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col">
       <Separator className="mt-2" />
@@ -166,7 +171,7 @@ const DesktopAIGroup = () => {
       <div className="hover:bg-secondary hover:text-foreground">
         <div
           className="flex items-center gap-4 m-2 text-sm"
-          onClick={() => setSelectedContainer("CHAT")}
+          onClick={() => console.log("CHAT")}
         >
           <ChatBubbleIcon className="mr-2 h-4 w-4" />
           Chat
@@ -175,7 +180,7 @@ const DesktopAIGroup = () => {
       <div className="hover:bg-secondary hover:text-foreground">
         <div
           className="flex items-center gap-4 m-2 text-sm"
-          onClick={() => setSelectedContainer("STATS")}
+          onClick={() => console.log("STATS")}
         >
           <BarChart4 className="mr-2 h-4 w-4" />
           Stats
@@ -184,7 +189,7 @@ const DesktopAIGroup = () => {
       <div className="hover:bg-secondary hover:text-foreground">
         <div
           className="flex items-center gap-4 m-2 text-sm"
-          onClick={() => setSelectedContainer("TOOLS")}
+          onClick={() => console.log("TOOLS")}
         >
           <Hammer className="mr-2 h-4 w-4" />
           Tools
@@ -195,7 +200,8 @@ const DesktopAIGroup = () => {
 };
 
 const DesktopLinksGroup = () => {
-  const { setSelectedContainer } = useContainerContext();
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col">
       <Separator className="my-1" />
@@ -203,7 +209,7 @@ const DesktopLinksGroup = () => {
       <div className="hover:bg-secondary hover:text-foreground">
         <div
           className="flex items-center gap-4 m-2 text-sm"
-          onClick={() => setSelectedContainer("ABOUT")}
+          onClick={() => console.log("ABOUT")}
         >
           <Store className="mr-2 h-4 w-4" />
           About
@@ -212,7 +218,7 @@ const DesktopLinksGroup = () => {
       <div className="hover:bg-secondary hover:text-foreground">
         <div
           className="flex items-center gap-4 m-2 text-sm"
-          onClick={() => setSelectedContainer("CONTACT")}
+          onClick={() => console.log("CONTACT")}
         >
           <LucideNotebookTabs className="mr-2 h-4 w-4" />
           Contact
@@ -221,7 +227,7 @@ const DesktopLinksGroup = () => {
       <div className="hover:bg-secondary hover:text-foreground">
         <div
           className="flex items-center gap-4 m-2 text-sm"
-          onClick={() => setSelectedContainer("DONATE")}
+          onClick={() => console.log("DONATE")}
         >
           <Gift className="mr-2 h-4 w-4" />
           Donate
