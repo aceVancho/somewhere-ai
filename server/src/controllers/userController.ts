@@ -159,7 +159,7 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
 
   const passwordResetToken = crypto.randomBytes(32).toString('hex')
   const passwordResetTokenExpiration = Date.now() + 3600000;
-  const passwordResetUrl = `http://localhost:4001/passwordreset?token=${passwordResetToken}`
+  const passwordResetUrl = `http://localhost:4002/passwordreset?token=${passwordResetToken}`
 
 
   try {

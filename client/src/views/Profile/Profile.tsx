@@ -4,6 +4,14 @@ import { useEffect, useState } from "react";
 import DeleteAllEntriesBtn from "./DeleteAllEntriesBtn";
 import { useAuth } from "@/contexts/authContext";
 import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
 
 const Profile: React.FC = () => {
   const { entries, setEntries } = useEntryContext();
@@ -85,13 +93,20 @@ const Profile: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-evenly h-2/4">
-      <h1>Profile</h1>
-      <div className="flex flex-col items-center">
-        <div>{user?.email}</div>
-        <Button variant='link' onClick={handlePasswordResetRequest}>Request Password Reset</Button>
-        <DeleteAllEntriesBtn deleteAllEntries={handleDeleteAllEntries}/>
-      </div>
+    <div className="w-screen flex justify-center mt-5">
+      <Card className="w-[350px]">
+        <CardHeader>
+          <CardTitle>Profile</CardTitle>
+          <CardDescription>{user?.email}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col mt-2 space-y-3">
+            <Label>Actions</Label>
+            <Button variant='outline' onClick={handlePasswordResetRequest}>Request Password Reset</Button>
+            <DeleteAllEntriesBtn deleteAllEntries={handleDeleteAllEntries}/>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
