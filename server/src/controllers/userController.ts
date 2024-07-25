@@ -113,9 +113,20 @@ export const signin = async (req: Request, res: Response) => {
   }
 };
 
-export const verify = async (req: Request, res: Response) => {
+export const verifyToken = async (req: Request, res: Response) => {
   try {
     const user = await User.findById(req.user.id); // Note the use of _id
+    if (!user) return res.status(404).json({ message: "User not found." });
+    return res.json({ user });
+  } catch (error) {
+    res.status(500).json({ message: "Error verifying user token." });
+  }
+};
+
+export const verifyUser = async (req: Request, res: Response) => {
+  const { email } = req.body
+  try {
+    const user = await User.findOne({ email }); 
     if (!user) return res.status(404).json({ message: "User not found." });
     return res.json({ user });
   } catch (error) {
@@ -159,13 +170,14 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
     }
   };
 
-  const passwordResetToken = crypto.randomBytes(32).toString("hex");
-  const passwordResetTokenExpiration = Date.now() + 3600000;
-  const passwordResetUrl = `http://localhost:4002/reset-token?passwordResetToken=${passwordResetToken}`;
-
   try {
-    const user = await User.findById(req.user._id); // Note the use of _id
+    const { email, isAuthenticated } = req.body;
+    const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "User not found." });
+    
+    const passwordResetToken = crypto.randomBytes(32).toString("hex");
+    const passwordResetTokenExpiration = Date.now() + 3600000;
+    const passwordResetUrl = `http://localhost:4002/reset-token?passwordResetToken=${passwordResetToken}&email=${email}`;
 
     user.passwordReset = {
       token: passwordResetToken,
@@ -184,6 +196,7 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
 
 export const resetPassword = async (req: Request, res: Response) => {
   const { email, password, token } = req.body;
+  console.log(email, password, token)
 
   try {
     const user = await User.findOne({ email });

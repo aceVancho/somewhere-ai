@@ -1,16 +1,26 @@
-import express from 'express';
-import { register, update, deleteUser, changePassword, signin, verify, requestPasswordReset, resetPassword } from '../controllers/userController';
-import { authMiddleware } from '../middleware/middleware';
+import express from "express";
+import {
+  register,
+  update,
+  deleteUser,
+  changePassword,
+  signin,
+  verifyToken,
+  requestPasswordReset,
+  resetPassword,
+  verifyUser,
+} from "../controllers/userController";
+import { authMiddleware } from "../middleware/middleware";
 
 const router = express.Router();
-
-router.post('/register', register);
-router.put('/update/:id', update);
-router.delete('/:id', deleteUser);
-router.post('/changePassword', changePassword);
-router.post('/signin', signin);
-router.get('/verify', authMiddleware, verify);
-router.post('/requestPasswordReset/:id', authMiddleware, requestPasswordReset);
-router.post('/resetPassword/', authMiddleware, resetPassword);
+router.post("/register", register);
+router.put("/update/:id", update);
+router.delete("/:id", deleteUser);
+router.post("/changePassword", changePassword);
+router.post("/signin", signin);
+router.get("/verifyToken", authMiddleware, verifyToken);
+router.post("/verifyUser", verifyUser);
+router.post("/requestPasswordReset/", requestPasswordReset);
+router.post("/resetPassword/", resetPassword);
 
 export default router;

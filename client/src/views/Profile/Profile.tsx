@@ -15,34 +15,9 @@ import { RequestPasswordResetBtn } from "./RequestPasswordResetBtn";
 
 const Profile: React.FC = () => {
   const { entries, setEntries } = useEntryContext();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
-  const [passwordResetToken, setPasswordResetToken] = useState<null | string>(null);
-
-  const setTokenNull = () => setPasswordResetToken(null);
-
-  useEffect(() => {
-    const storedToken = localStorage.getItem('passwordResetToken');
-    if (storedToken) {
-      console.log('new token', storedToken)
-      setPasswordResetToken(storedToken);
-      localStorage.removeItem('passwordResetToken'); // Remove token after using it
-    }
-
-    const handleStorageChange = () => {
-      const newToken = localStorage.getItem('passwordResetToken');
-      if (newToken) {
-        setPasswordResetToken(newToken);
-        localStorage.removeItem('passwordResetToken'); // Remove token after using it
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
 
   useEffect(() => {
     const fetchEntries = async () => {
@@ -102,19 +77,9 @@ const Profile: React.FC = () => {
     }
   };
 
-  const handlePasswordResetRequest = async () => {
-    console.log(user)
-    try {
-      fetch(`http://localhost:4001/api/users/requestPasswordReset/${user?._id}`, {
-        method: 'POST',
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("somewhereAIToken")}`,
-        },
-      })
-    } catch (error) {
-      console.error(error);
-    }
+  const requestPasswordResetBtnProps = {
+      email: user?.email || '',
+      isAuthenticated: isAuthenticated
   }
 
   return (
@@ -127,7 +92,7 @@ const Profile: React.FC = () => {
         <CardContent>
           <div className="flex flex-col mt-2 space-y-3">
             <Label>Actions</Label>
-            <RequestPasswordResetBtn setTokenNull={setTokenNull} requestPasswordReset={handlePasswordResetRequest} token={passwordResetToken} />
+            <RequestPasswordResetBtn {...requestPasswordResetBtnProps } />
             <DeleteAllEntriesBtn deleteAllEntries={handleDeleteAllEntries}/>
           </div>
         </CardContent>

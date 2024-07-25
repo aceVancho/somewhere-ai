@@ -32,7 +32,7 @@ const App: React.FC = () => {
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <AuthProvider>
         <BrowserRouter>
-          <Toaster />
+          <Toaster duration={7000} />
           <EntryProvider>
             <Routes>
               <Route path='/' element={<Layout />}>
@@ -40,9 +40,10 @@ const App: React.FC = () => {
                 <Route path="/all-entries" element={<ProtectedRoute><AllEntries /></ProtectedRoute>} />
                 <Route path="/new-entry" element={<ProtectedRoute><NewEntry /></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                <Route path="/reset-token" element={<ProtectedRoute><ResetToken /></ProtectedRoute>} />
+                {/* <Route path="/reset-token" element={<ProtectedRoute><ResetToken /></ProtectedRoute>} /> */}
                 {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
               </Route>
+              <Route path="/reset-token" element={<ResetToken />} />
             </Routes>
           </EntryProvider>
         </BrowserRouter>

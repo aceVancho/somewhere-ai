@@ -16,6 +16,7 @@ declare global {
       logout: () => void;
       signUp: (userData: SignUpParams) => Promise<void>;
       resetPassword: (passwordData: ResetPasswordParams) => Promise<void>;
+      verifyUser: (email: string) => Promise<boolean>
       loading: boolean;
   }
   interface IEntry {

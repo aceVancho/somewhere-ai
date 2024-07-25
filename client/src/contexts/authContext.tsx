@@ -103,7 +103,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const verifyToken = async (token: string) => {
     try {
-      const response = await fetch('http://localhost:4001/api/users/verify', {
+      const response = await fetch('http://localhost:4001/api/users/verifyToken', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -112,7 +112,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
 
       const data = await response.json();
-      console.log('verify:', { data });
+      console.log('verifyToken:', { data });
       if (response.ok) {
         setUser(data.user);
       } else {
@@ -125,11 +125,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 };
 
+  const verifyUser = async (email: string) => {
+    try {
+      const response = await fetch('http://localhost:4001/api/users/verifyUser', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+      console.log('verifyUser:', { data });
+      if (response.ok) return true 
+      else return false
+    } catch (error) {
+      console.error('Error validating user:', error);
+      throw error;
+    }
+};
+
   const isAuthenticated = user !== null;
 
   return (
     <AuthContext.Provider
-      value={{ user, login, logout, signUp, resetPassword, isAuthenticated, loading }}
+      value={{ user, login, logout, signUp, resetPassword, isAuthenticated, loading, verifyUser }}
     >
       {children}
     </AuthContext.Provider>

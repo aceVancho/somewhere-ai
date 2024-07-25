@@ -9,7 +9,7 @@ import {
 import { useToast } from "@/components/ui/use-toast"
 import { SwipeDirection } from "@radix-ui/react-toast"
 
-export function Toaster({ swipeDirection = "right" as SwipeDirection, duration = 3000 }) {
+export function Toaster({ swipeDirection = "right" as SwipeDirection, duration = 5000 }) {
   const { toasts } = useToast()
 
   return (
