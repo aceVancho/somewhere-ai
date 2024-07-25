@@ -7,6 +7,7 @@ declare global {
     createdAt?: string;
   }
   
+  type ResetPasswordParams = { email: string, password: string, token: string}
   type SignUpParams = Pick<IUser, 'email' | 'password'>
   interface IAuthContextType {
       user: IUser | null;
@@ -14,6 +15,7 @@ declare global {
       login: (userData: SignUpParams) => Promise<void>;
       logout: () => void;
       signUp: (userData: SignUpParams) => Promise<void>;
+      resetPassword: (passwordData: ResetPasswordParams) => Promise<void>;
       loading: boolean;
   }
   interface IEntry {

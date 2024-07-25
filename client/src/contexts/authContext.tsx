@@ -27,6 +27,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
+  const resetPassword = async (passwordData: ResetPasswordParams) => {
+    console.log(passwordData)
+    try {
+      const response = await fetch('http://localhost:4001/api/users/resetPassword', {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("somewhereAIToken")}`,
+        },
+        body: JSON.stringify(passwordData),
+      })
+    } catch (error) {
+      console.error('Password Reset Error:', error)
+      throw error;
+    }
+  }
+
 
   const signUp = async (userData: SignUpParams): Promise<void> => {
     try {
@@ -112,7 +129,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, login, logout, signUp, isAuthenticated, loading }}
+      value={{ user, login, logout, signUp, resetPassword, isAuthenticated, loading }}
     >
       {children}
     </AuthContext.Provider>

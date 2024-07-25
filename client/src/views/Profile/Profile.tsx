@@ -3,7 +3,6 @@ import { useEntryContext } from "@/contexts/entryContext";
 import { useEffect, useState } from "react";
 import DeleteAllEntriesBtn from "./DeleteAllEntriesBtn";
 import { useAuth } from "@/contexts/authContext";
-import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -12,12 +11,38 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
+import { RequestPasswordResetBtn } from "./RequestPasswordResetBtn";
 
 const Profile: React.FC = () => {
   const { entries, setEntries } = useEntryContext();
   const { user } = useAuth();
-  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const [error, setError] = useState<string | null>(null);
+  const [passwordResetToken, setPasswordResetToken] = useState<null | string>(null);
+
+  const setTokenNull = () => setPasswordResetToken(null);
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem('passwordResetToken');
+    if (storedToken) {
+      console.log('new token', storedToken)
+      setPasswordResetToken(storedToken);
+      localStorage.removeItem('passwordResetToken'); // Remove token after using it
+    }
+
+    const handleStorageChange = () => {
+      const newToken = localStorage.getItem('passwordResetToken');
+      if (newToken) {
+        setPasswordResetToken(newToken);
+        localStorage.removeItem('passwordResetToken'); // Remove token after using it
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchEntries = async () => {
@@ -102,7 +127,7 @@ const Profile: React.FC = () => {
         <CardContent>
           <div className="flex flex-col mt-2 space-y-3">
             <Label>Actions</Label>
-            <Button variant='outline' onClick={handlePasswordResetRequest}>Request Password Reset</Button>
+            <RequestPasswordResetBtn setTokenNull={setTokenNull} requestPasswordReset={handlePasswordResetRequest} token={passwordResetToken} />
             <DeleteAllEntriesBtn deleteAllEntries={handleDeleteAllEntries}/>
           </div>
         </CardContent>

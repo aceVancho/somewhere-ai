@@ -9,9 +9,21 @@ import NewEntry from './views/NewEntry/NewEntry';
 import Profile from './views/Profile/Profile';
 import { Login } from './components/Login';
 import Layout from './components/Layout';
+import { Skeleton } from './components/ui/skeleton';
+import { ResetToken } from './views/Profile/ResetToken';
 
 const ProtectedRoute: React.FC<{ children: JSX.Element }> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="h-screen flex flex-col items-center w-full overflow-y-auto">
+        <Skeleton className="w-1/2 h-20 my-2" />
+        <Skeleton className="w-1/2 h-20 my-2" />
+        <Skeleton className="w-1/2 h-20 my-2" />
+      </div>
+    );
+  }
   return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
@@ -28,6 +40,7 @@ const App: React.FC = () => {
                 <Route path="/all-entries" element={<ProtectedRoute><AllEntries /></ProtectedRoute>} />
                 <Route path="/new-entry" element={<ProtectedRoute><NewEntry /></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path="/reset-token" element={<ProtectedRoute><ResetToken /></ProtectedRoute>} />
                 {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
               </Route>
             </Routes>

@@ -3,12 +3,11 @@ import User from "../models/Users";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
-import crypto from 'crypto';
+import crypto from "crypto";
 
 const nodemailer = require("nodemailer");
 
 export const register = async (req: Request, res: Response) => {
-  console.log('...1', req.body.email, req.body.password)
   try {
     const existingUser = await User.findOne({ email: req.body.email });
     if (existingUser) {
@@ -135,7 +134,10 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
     },
   });
 
-  const sendPasswordResetEmail = async (user: IUser, passwordResetUrl: string) => {
+  const sendPasswordResetEmail = async (
+    user: IUser,
+    passwordResetUrl: string
+  ) => {
     try {
       await transporter.sendMail({
         from: `${process.env.ETHEREAL_FULL_NAME} < ${process.env.ETHEREAL_EMAIL_ADDRESS}>`, // sender address
@@ -157,10 +159,9 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
     }
   };
 
-  const passwordResetToken = crypto.randomBytes(32).toString('hex')
+  const passwordResetToken = crypto.randomBytes(32).toString("hex");
   const passwordResetTokenExpiration = Date.now() + 3600000;
-  const passwordResetUrl = `http://localhost:4002/passwordreset?token=${passwordResetToken}`
-
+  const passwordResetUrl = `http://localhost:4002/reset-token?passwordResetToken=${passwordResetToken}`;
 
   try {
     const user = await User.findById(req.user._id); // Note the use of _id
@@ -169,16 +170,56 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
     user.passwordReset = {
       token: passwordResetToken,
       expiration: passwordResetTokenExpiration,
-      url: passwordResetUrl
+      url: passwordResetUrl,
     };
 
     await user.save();
     sendPasswordResetEmail(user, passwordResetUrl);
 
-    console.log('user after save', user)
-
     return res.status(200).json({ message: "Password Reset Successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error Resetting User Password" });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  const { email, password, token } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    const isTokenExpiredOrInvalid =
+      !user?.passwordReset?.token || !user?.passwordReset?.expiration;
+    if (isTokenExpiredOrInvalid) {
+      return res
+        .status(400)
+        .json({ message: "Invalid or expired password reset token." });
+    }
+
+    const tokensMatch = token === user?.passwordReset?.token;
+    let isTokenExpired;
+    if (user.passwordReset?.expiration) {
+      isTokenExpired = Date.now() > user?.passwordReset?.expiration;
+    }
+
+    if (!tokensMatch || isTokenExpired) {
+      return res
+        .status(400)
+        .json({ message: "Invalid or expired password reset token." });
+    }
+
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    user.password = hashedPassword;
+    user.passwordReset = undefined;
+
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successfully." });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json({ message: "Error resetting password." });
   }
 };
