@@ -41,8 +41,6 @@ export const RequestPasswordResetBtn: React.FC<
   const { verifyUser } = useAuth();
   const { toast } = useToast();
 
-    console.log('email??', email)
-
   const handlePasswordResetRequest = async () => {
     let response;
     if (!isAuthenticated) {

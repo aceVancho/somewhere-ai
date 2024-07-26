@@ -14,9 +14,10 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     try {
         const decoded: any = jwt.verify(token, process.env.SOMEWHERE_JWT_SECRET as string);
         const user = await User.findById(decoded.userId);
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
+
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        if (!user.tokens.includes(token)) return res.status(401).json({ error: 'Invalid token' });
+        
         req.user = user; // Attach the user to the request object
         next();
     } catch (error) {

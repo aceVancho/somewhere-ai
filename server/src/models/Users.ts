@@ -4,6 +4,7 @@ import { IUser } from "../types/types"
 const userSchema = new mongoose.Schema<IUser>({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    tokens: { type: [String], default: [] },
     passwordReset: {
       token: { type: String, required: false },
       expiration: { type: Number, required: false },

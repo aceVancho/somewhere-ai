@@ -13,6 +13,7 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+// TODO: explore bug related to user-state remaining after logout
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<IUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,10 +49,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
   
-
-
   const signUp = async (userData: SignUpParams): Promise<void> => {
     try {
+      logout();
+
       const response = await fetch("http://localhost:4001/api/users/register", {
         method: "POST",
         headers: {
@@ -78,6 +79,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const { email, password } = userData;
   
     try {
+      logout();
+
       const response = await fetch("http://localhost:4001/api/users/signin", {
         method: "POST",
         headers: {
@@ -117,7 +120,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
 
       const data = await response.json();
-      console.log('verifyToken:', { data });
+      console.log('verifyToken:', data.user);
       if (response.ok) {
         setUser(data.user);
       } else {

@@ -20,7 +20,6 @@ export const register = async (req: Request, res: Response) => {
       email: req.body.email,
     });
     const savedUser = await user.save();
-
     const token = jwt.sign(
       { userId: user._id },
       process.env.SOMEWHERE_JWT_SECRET as string
@@ -107,6 +106,10 @@ export const signin = async (req: Request, res: Response) => {
       { userId: user._id },
       process.env.SOMEWHERE_JWT_SECRET as string
     );
+
+    user.tokens = [token]; // Add the new token
+    await user.save();
+
     res.json({ token, user });
   } catch (error) {
     res.status(500).json({ message: "Error signing in." });

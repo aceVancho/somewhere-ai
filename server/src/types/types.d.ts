@@ -11,6 +11,7 @@ declare global {
     email: string;
     password: string;
     createdAt: Date;
+    tokens: string[];
     passwordReset?: {
       token?: string
       expiration?: number,
