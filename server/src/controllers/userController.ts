@@ -196,7 +196,6 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
 
 export const resetPassword = async (req: Request, res: Response) => {
   const { email, password, token } = req.body;
-  console.log(email, password, token)
 
   try {
     const user = await User.findOne({ email });
@@ -236,3 +235,4 @@ export const resetPassword = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Error resetting password." });
   }
 };
+

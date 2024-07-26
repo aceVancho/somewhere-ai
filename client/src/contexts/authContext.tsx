@@ -28,7 +28,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const resetPassword = async (passwordData: ResetPasswordParams) => {
-    console.log(passwordData)
     try {
       const response = await fetch('http://localhost:4001/api/users/resetPassword', {
         method: 'POST',
@@ -37,12 +36,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           Authorization: `Bearer ${localStorage.getItem("somewhereAIToken")}`,
         },
         body: JSON.stringify(passwordData),
-      })
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to reset password');
+      }
     } catch (error) {
       console.error('Password Reset Error:', error)
       throw error;
     }
-  }
+  };
+  
 
 
   const signUp = async (userData: SignUpParams): Promise<void> => {

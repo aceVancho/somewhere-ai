@@ -41,18 +41,21 @@ export const RequestPasswordResetBtn: React.FC<
   const { verifyUser } = useAuth();
   const { toast } = useToast();
 
+    console.log('email??', email)
+
   const handlePasswordResetRequest = async () => {
     let response;
     if (!isAuthenticated) {
       response = await verifyUser(email)
+      
+      if (!response) return toast({
+          variant: "destructive",
+          title: "This user does not exist in our database",
+          description: "Try again with a different e-mail address.",
+          action: <ToastAction altText="Try again">Try again.</ToastAction>,
+        });
     }
     
-    if (!response) return toast({
-        variant: "destructive",
-        title: "This user does not exist in our database",
-        description: "Try again with a different e-mail address.",
-        action: <ToastAction altText="Try again">Try again.</ToastAction>,
-      });
 
     try {
       fetch(`http://localhost:4001/api/users/requestPasswordReset/`, {
