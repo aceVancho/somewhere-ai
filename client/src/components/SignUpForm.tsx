@@ -33,7 +33,7 @@ interface SignUpFormProps {
 }
 
 export const SignUpForm: React.FC<SignUpFormProps> = ({ switchToLogin }) => {
-    const { signUp } = useAuth();
+    const { signUp, logout } = useAuth();
     const { toast } = useToast();
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
@@ -59,7 +59,8 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ switchToLogin }) => {
           title: `🎉 Welcome, ${username}!`,
           description: "Your account has been created successfully.",
         });
-        navigate('/all-entries');
+        logout();
+        navigate('/login');
       } catch (error: any) {
         toast({
           variant: "destructive",

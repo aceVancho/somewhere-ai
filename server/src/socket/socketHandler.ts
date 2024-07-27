@@ -47,8 +47,9 @@ class SocketHandler {
         socket.data.sessionId = sessionId;
         console.log(`Client ${email} joined session: ${sessionId}`);
 
-        const entry = await Entry.findById(sessionId)
-        void SessionHandler.createUser(email, entry!)
+        const entry = await Entry.findById(sessionId).populate('user')
+        if (!entry) return console.error('No Entry Found.')
+
         void this.SessionHandler.createChain(entry!);
 
         // If conversation exists, emit a new message with history

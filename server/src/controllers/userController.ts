@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 import crypto from "crypto";
+import SessionHandler from "../api/sessionHandler";
 
 const nodemailer = require("nodemailer");
 
@@ -19,7 +20,10 @@ export const register = async (req: Request, res: Response) => {
       password: hashedPassword,
       email: req.body.email,
     });
+
     const savedUser = await user.save();
+    await SessionHandler.createUser(user.email, user._id);
+
     const token = jwt.sign(
       { userId: user._id },
       process.env.SOMEWHERE_JWT_SECRET as string

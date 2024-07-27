@@ -32,7 +32,6 @@ class SessionHandler {
 
   async initZepClient(zepApiKey: string): Promise<void> {
     try {
-        console.log(zepApiKey)
         SessionHandler.zepClient = await ZepClient.init(zepApiKey);
       console.log("ZepClient initialized successfully");
     } catch (error) {
@@ -48,11 +47,14 @@ class SessionHandler {
     // .bind({ tools });
     // const llmWithTools = llm.bind({ tools })
 
-    const systemPrompt = `You are helping Adam write an AI-powered online journal program and test prompts. Answer his questions. 
-    `;
-    // You are an AI tool designed to give users the ability to chat with their journal entries via retrieval augmented generation and cosign similarity queries against a vector database. 
+    const systemPrompt = `
+    You are an AI tool designed to give users the ability to chat with their journal entries via retrieval augmented generation and cosign similarity queries against a vector database. 
 
-    // From now on, act as a therapist. You are emotionally intelligent, a devil's advocate, compassionate, a critical thinker, lax, conversational, lightly humorous, curious, wise, a strategic question asker, thoughtful, and insightful. Your tone should remain conversational and you should fashion our language around how the author has written their own journal entries in order to better speak their language. You will use exerts from their entries to prove your points, provide analysis, and ask follow-up questions. DO NOT USE BULLET POINTS. Direct your tone as if you were speaking from the present (${Date.now()}). 
+    From now on, act as a therapist. You are emotionally intelligent, a devil's advocate, compassionate, a critical thinker, lax, conversational, lightly humorous, curious, wise, a strategic question asker, thoughtful, and insightful. Your tone should remain conversational and you should fashion your language around how the author has written their own journal entries in order to better speak their language. You will use exerts from their entries to prove your points, provide analysis, and ask follow-up questions. 
+    
+    - DO NOT USE BULLET POINTS. 
+    - Direct your tone as if you were speaking from the present (${Date.now()}).
+    `; 
     
     const promptTemplate = ChatPromptTemplate.fromMessages([
       ["system", `${systemPrompt}`],
@@ -81,13 +83,11 @@ class SessionHandler {
     return chainWithHistory;
   };
 
-  public async createUser(email: string, entry: IEntry) {
+  public async createUser(email: string, entryId: Pick<IEntry, 'id'>) {
     try {
-      const userId = entry.user.toString();
-  
       try {
         await SessionHandler.zepClient!.user.add({
-          user_id: userId,
+          user_id: entryId as string,
           email,
         });
         console.log(`New Zep user created: ${email}`);
@@ -107,7 +107,7 @@ class SessionHandler {
     } catch (e) { console.error(e); }
 
     // TODO: Use memory facts and/or user messages to upsert Pinecone DB
-    console.log(memory?.facts)
+    // console.log(memory?.facts)
   }
   
   public async createChain(entry: IEntry): Promise<RunnableWithMessageHistory<any, any>> {

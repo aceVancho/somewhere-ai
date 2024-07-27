@@ -66,8 +66,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   
   const signUp = async (userData: SignUpParams): Promise<void> => {
     try {
-      logout();
-
       const response = await fetch("http://localhost:4001/api/users/register", {
         method: "POST",
         headers: {
@@ -94,8 +92,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const { email, password } = userData;
   
     try {
-      logout();
-
       const response = await fetch("http://localhost:4001/api/users/signin", {
         method: "POST",
         headers: {
