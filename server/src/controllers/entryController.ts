@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import Entry from '../models/Entry';
+import User from '../models/Users';
 import { upsert } from '../api/upsert';
 import { Pinecone } from '@pinecone-database/pinecone';
 import CompletionHandler from '../api/completionHandler';
@@ -104,33 +105,39 @@ export const updateEntry = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
+const deleteEntryById = async (entryId: string, userId: string, session: any): Promise<void> => {
+  try {
+    // Delete Mongoose Record
+    const entry = await Entry.findByIdAndDelete(entryId, { session });
+    
+    if (!entry) {
+      throw new Error('Journal entry not found');
+    }
+    
+    // Delete Zep Session
+    await SessionHandler.deleteSession(entryId);
+    // Delete Pinecone Records
+    const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
+    const index = pc.index(process.env.PINECONE_INDEX!);
+    
+    console.log({userId, entryId})
+    const results = await index.namespace(userId).listPaginated({ prefix: `${entryId}#` });
+    const vectorIds = results.vectors?.map((vector) => vector.id).filter((v): v is string => v !== undefined);
+
+    if (vectorIds && vectorIds.length > 0) {
+      await index.namespace(userId).deleteMany(vectorIds);
+    }
+  } catch (error: any) {
+    throw new Error(`Error deleting entry ${entryId}: ${error.message}`);
+  }
+};
+
+
 export const deleteEntry = async (req: Request, res: Response): Promise<void> => {
   const session = await startTransaction();
 
   try {
-    // Delete Mongoose Record
-    const entry = await Entry.findByIdAndDelete(req.params.id, { session });
-    
-    if (!entry) {
-      await abortTransaction(session);
-      res.status(404).json({ error: 'Journal entry not found' });
-      return;
-    }
-    
-    // Delete Zep Session
-    SessionHandler.deleteSession(req.params.id)
-
-    // Delete Pinecone Records
-    const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
-    const index = pc.index(process.env.PINECONE_INDEX!);
-
-    const results = await index.namespace(entry.user.toString()).listPaginated({ prefix: `${req.params.id}#` });
-    const vectorIds = results.vectors?.map((vector) => vector.id).filter((v): v is string => v !== undefined);
-
-    if (vectorIds && vectorIds.length > 0) {
-      await index.namespace(entry.user.toString()).deleteMany(vectorIds);
-    }
-
+    await deleteEntryById(req.params.id, req.user.id, session);
     await commitTransaction(session);
     res.status(200).json({ message: 'Journal entry and associated vectors deleted' });
   } catch (error) {
@@ -140,12 +147,14 @@ export const deleteEntry = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
+
 export const deleteAllEntries = async (req: Request, res: Response): Promise<void> => {
   const session = await startTransaction();
 
   try {
+    const userId = req.user._id;
     // Find all entries for the user
-    const entries = await Entry.find({ user: req.user._id }, null, { session });
+    const entries = await Entry.find({ user: userId }, null, { session });
     if (!entries || entries.length === 0) {
       await abortTransaction(session);
       res.status(404).json({ error: 'No journal entries found' });
@@ -153,22 +162,8 @@ export const deleteAllEntries = async (req: Request, res: Response): Promise<voi
     }
 
     for (const entry of entries) {
-      // Delete Mongoose Record
-      await Entry.findByIdAndDelete(entry._id, { session });
-      
-      // Delete Zep Session
-      await SessionHandler.deleteSession(entry._id.toString());
-
-      // Delete Pinecone Records
-      const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
-      const index = pc.index(process.env.PINECONE_INDEX!);
-
-      const results = await index.namespace(entry.user.toString()).listPaginated({ prefix: `${entry._id}#` });
-      const vectorIds = results.vectors?.map((vector) => vector.id).filter((v): v is string => v !== undefined);
-
-      if (vectorIds && vectorIds.length > 0) {
-        await index.namespace(entry.user.toString()).deleteMany(vectorIds);
-      }
+      // Call the helper function for each entry
+      await deleteEntryById(entry._id.toString(), userId.toString(), session);
     }
 
     await commitTransaction(session);
@@ -179,4 +174,32 @@ export const deleteAllEntries = async (req: Request, res: Response): Promise<voi
     res.status(500).json({ error: 'Error deleting all journal entries' });
   }
 };
+
+export const deleteUserAndEntries = async (req: Request, res: Response): Promise<void> => {
+  const session = await startTransaction();
+
+  try {
+    const { id: userId } = req.params;
+
+    // Find all entries for the user
+    const entries = await Entry.find({ user: userId }, null, { session });
+    
+    // Delete all entries
+    for (const entry of entries) {
+      await deleteEntryById(entry._id.toString(), userId, session);
+    }
+
+    // Delete the user
+    await User.findByIdAndDelete(userId, { session });
+
+    // Commit the transaction
+    await commitTransaction(session);
+    res.status(200).json({ message: 'User and all associated entries deleted successfully.' });
+  } catch (error) {
+    await abortTransaction(session);
+    console.error('Error deleting user and associated entries:', error);
+    res.status(500).json({ error: 'Error deleting user and associated entries.' });
+  }
+};
+
 

@@ -11,11 +11,12 @@ import {
   verifyUser,
 } from "../controllers/userController";
 import { authMiddleware } from "../middleware/middleware";
+import { deleteUserAndEntries } from "../controllers/entryController";
 
 const router = express.Router();
 router.post("/register", register);
 router.put("/update/:id", update);
-router.delete("/:id", deleteUser);
+router.delete("/:id", deleteUserAndEntries);
 router.post("/changePassword", changePassword);
 router.post("/signin", signin);
 router.get("/verifyToken", authMiddleware, verifyToken);

@@ -10,10 +10,13 @@ import {
 } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { RequestPasswordResetBtn } from "./RequestPasswordResetBtn";
+import DeleteUserBtn from "./DeleteUserBtn";
+import { useNavigate } from "react-router-dom";
 
 const Profile: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleDeleteAllEntries = async () => {
     try {
@@ -46,6 +49,33 @@ const Profile: React.FC = () => {
       isAuthenticated: isAuthenticated
   }
 
+  const handleDeleteUser = async () => {
+    try {
+      fetch(
+        `http://localhost:4001/api/users/${user?._id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("somewhereAIToken")}`,
+          },
+        }
+      );
+      toast({
+        title: "User deleted",
+        description: `Your user and entries have been deleted successfully.`,
+      });
+      navigate('/login');
+    } catch (error) {
+      console.error('Could not delete user or entries:', error);
+      toast({
+          variant: "destructive",
+          title: "Error",
+          description: (error as Error).message,
+        });
+    }
+  }
+
   return (
     <div className="flex h-4/5 justify-center items-center">
       <Card className="w-[350px]">
@@ -58,6 +88,7 @@ const Profile: React.FC = () => {
             <Label>Actions</Label>
             <RequestPasswordResetBtn {...requestPasswordResetBtnProps } />
             <DeleteAllEntriesBtn deleteAllEntries={handleDeleteAllEntries}/>
+            <DeleteUserBtn deleteUser={handleDeleteUser} />
           </div>
         </CardContent>
       </Card>

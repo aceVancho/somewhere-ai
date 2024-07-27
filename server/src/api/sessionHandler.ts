@@ -110,6 +110,8 @@ class SessionHandler {
     // console.log(memory?.facts)
   }
   
+  // TODO: Decouple this logic. Chains and Sessions need to be separate
+  // TODO: Create/Add sessions upon Entry creation
   public async createChain(entry: IEntry): Promise<RunnableWithMessageHistory<any, any>> {
     const { id: sessionId, user, tags, title, text } = entry;
 
