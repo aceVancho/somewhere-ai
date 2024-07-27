@@ -118,7 +118,7 @@ export const deleteEntry = async (req: Request, res: Response): Promise<void> =>
     }
     
     // Delete Zep Session
-    SessionHandler.deleteChain(req.params.id)
+    SessionHandler.deleteSession(req.params.id)
 
     // Delete Pinecone Records
     const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
@@ -139,3 +139,44 @@ export const deleteEntry = async (req: Request, res: Response): Promise<void> =>
     res.status(500).json({ error: 'Error deleting journal entry' });
   }
 };
+
+export const deleteAllEntries = async (req: Request, res: Response): Promise<void> => {
+  const session = await startTransaction();
+
+  try {
+    // Find all entries for the user
+    const entries = await Entry.find({ user: req.user._id }, null, { session });
+    if (!entries || entries.length === 0) {
+      await abortTransaction(session);
+      res.status(404).json({ error: 'No journal entries found' });
+      return;
+    }
+
+    for (const entry of entries) {
+      // Delete Mongoose Record
+      await Entry.findByIdAndDelete(entry._id, { session });
+      
+      // Delete Zep Session
+      await SessionHandler.deleteSession(entry._id.toString());
+
+      // Delete Pinecone Records
+      const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
+      const index = pc.index(process.env.PINECONE_INDEX!);
+
+      const results = await index.namespace(entry.user.toString()).listPaginated({ prefix: `${entry._id}#` });
+      const vectorIds = results.vectors?.map((vector) => vector.id).filter((v): v is string => v !== undefined);
+
+      if (vectorIds && vectorIds.length > 0) {
+        await index.namespace(entry.user.toString()).deleteMany(vectorIds);
+      }
+    }
+
+    await commitTransaction(session);
+    res.status(200).json({ message: 'All journal entries and associated vectors deleted' });
+  } catch (error) {
+    await abortTransaction(session);
+    console.error('Error deleting all journal entries:', error);
+    res.status(500).json({ error: 'Error deleting all journal entries' });
+  }
+};
+

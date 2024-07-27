@@ -141,7 +141,7 @@ class SessionHandler {
     return this.sessionChains.get(sessionId);
   }
 
-  public async deleteChain(sessionId: string): Promise<void> {
+  public async deleteSession(sessionId: string): Promise<void> {
     try {
       await SessionHandler.zepClient?.memory.deleteMemory(sessionId)
       this.sessionChains.delete(sessionId)
