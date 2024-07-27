@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { IUser, IAuthContextType } from "../types";
+import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext<IAuthContextType | undefined>(undefined);
 
@@ -17,6 +18,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<IUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const storedToken = localStorage.getItem('somewhereAIToken');
@@ -26,6 +28,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } else {
       setLoading(false);
     }
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'somewhereAIToken' && !event.newValue) {
+        setUser(null);
+        navigate('/login');
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   const resetPassword = async (passwordData: ResetPasswordParams) => {
