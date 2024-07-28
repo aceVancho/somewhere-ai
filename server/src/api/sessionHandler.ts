@@ -9,15 +9,14 @@ import {
   MessagesPlaceholder,
 } from "@langchain/core/prompts";
 import { RunnableWithMessageHistory } from "@langchain/core/runnables";
-import { ObjectId } from 'mongodb';
+import { ObjectId } from "mongodb";
 import { pineconeQuery } from "./query";
 
-
 class SessionHandler {
-    private static instance: SessionHandler;
-    private static zepClient: ZepClient | null = null;
-    private sessionChains: Map<string, RunnableWithMessageHistory<any, any>> = new Map();
-  
+  private static instance: SessionHandler;
+  private static zepClient: ZepClient | null = null;
+  private sessionChains: Map<string, RunnableWithMessageHistory<any, any>> =
+    new Map();
 
   constructor(zepApiKey: string) {
     this.initZepClient(zepApiKey);
@@ -32,18 +31,18 @@ class SessionHandler {
 
   async initZepClient(zepApiKey: string): Promise<void> {
     try {
-        SessionHandler.zepClient = await ZepClient.init(zepApiKey);
+      SessionHandler.zepClient = await ZepClient.init(zepApiKey);
       console.log("ZepClient initialized successfully");
     } catch (error) {
       console.error("Error initializing ZepClient:", error);
     }
   }
-  
+
   buildChain = (sessionId: string) => {
     const llm = new ChatOpenAI({
       temperature: 0.4,
       modelName: process.env.OPEN_AI_CHAT_MODEL,
-    })
+    });
     // .bind({ tools });
     // const llmWithTools = llm.bind({ tools })
 
@@ -54,15 +53,15 @@ class SessionHandler {
     
     - DO NOT USE BULLET POINTS. 
     - Direct your tone as if you were speaking from the present (${Date.now()}).
-    `; 
-    
+    `;
+
     const promptTemplate = ChatPromptTemplate.fromMessages([
       ["system", `${systemPrompt}`],
       ["system", "Original entry text: {entryText}"],
       ["system", "Context from past entries (vector DB matches): {context}"],
-      new MessagesPlaceholder('context'),
+      new MessagesPlaceholder("context"),
       ["system", "Conversation history: {history}"],
-      new MessagesPlaceholder('history'),
+      new MessagesPlaceholder("history"),
       ["human", "{question}"],
     ]);
 
@@ -83,7 +82,7 @@ class SessionHandler {
     return chainWithHistory;
   };
 
-  public async createUser(email: string, entryId: Pick<IEntry, 'id'>) {
+  public async createUser(email: string, entryId: Pick<IEntry, "id">) {
     try {
       try {
         await SessionHandler.zepClient!.user.add({
@@ -92,10 +91,18 @@ class SessionHandler {
         });
         console.log(`New Zep user created: ${email}`);
       } catch (error: any) {
-        console.log(`User ${email} already exists.`)
+        console.log(`User ${email} already exists.`);
       }
     } catch (error) {
-      console.error('Error creating user:', error);
+      console.error("Error creating user:", error);
+    }
+  }
+
+  public async deleteUser(userId: string) {
+    try {
+      await SessionHandler.zepClient!.user.delete(userId);
+    } catch (error) {
+      console.error("Could not delete Zep user:", error);
     }
   }
 
@@ -103,60 +110,71 @@ class SessionHandler {
     let memory;
 
     try {
-      memory = await SessionHandler.zepClient!.memory.getMemory(sessionId)
-    } catch (e) { console.error(e); }
+      memory = await SessionHandler.zepClient!.memory.getMemory(sessionId);
+    } catch (e) {
+      console.error(e);
+    }
 
     // TODO: Use memory facts and/or user messages to upsert Pinecone DB
     // console.log(memory?.facts)
   }
-  
-  // TODO: Decouple this logic. Chains and Sessions need to be separate
-  // TODO: Create/Add sessions upon Entry creation
-  public async createChain(entry: IEntry): Promise<RunnableWithMessageHistory<any, any>> {
-    const { id: sessionId, user, tags, title, text } = entry;
 
+  public async createChain(entry: IEntry): Promise<void> {
     try {
-      // Attempt to retrieve the session
-      const session = await SessionHandler.zepClient!.memory.getSession(sessionId);
-      console.log('Found existing session...', session)
-  } catch (error) {
-      console.error('No session exists. Adding new session...')
-      // If session does not exist, create a new one
-      try {
-        await SessionHandler.zepClient!.memory.addSession(new Session({ 
-          session_id: sessionId,
-          user_id: user.toString(),
-          metadata: { title, tags, text } || {} 
-      }));
-      } catch (error) {
-        console.log('Failed to add a new session.', error)
-      }
-  } finally {
-      // Build the chain regardless of whether the session exists or is newly created
+      const { id: sessionId } = entry;
       const chain = this.buildChain(sessionId);
       this.sessionChains.set(sessionId, chain);
-      return chain;
-  }
+    } catch (error) {
+      console.error("Problem building or setting chain", error);
+    }
   }
 
-  public getChain(sessionId: string): RunnableWithMessageHistory<any, any> | undefined {
+  public getChain(
+    sessionId: string
+  ): RunnableWithMessageHistory<any, any> | undefined {
     return this.sessionChains.get(sessionId);
-  }
-
-  public async deleteSession(sessionId: string): Promise<void> {
-    try {
-      await SessionHandler.zepClient?.memory.deleteMemory(sessionId)
-      this.sessionChains.delete(sessionId)
-    } catch (e) { console.error(e); }
   }
 
   public async removeChain(sessionId: string) {
     if (this.sessionChains.delete(sessionId)) {
-        console.log(`Chain with id:${sessionId} successfully removed.`)
-        this.updateConversation(sessionId);
+      console.log(`Chain with id:${sessionId} successfully removed.`);
+      // this.updateConversation(sessionId);
     } else {
-        console.error(`Could not remove chain with id:${sessionId}. Not found.`)
+      console.error(`Could not remove chain with id:${sessionId}. Not found.`);
     }
+  }
+
+  public async createSession(entry: IEntry): Promise<void> {
+    const { id: sessionId, user, tags, title, text } = entry;
+
+    const newSession = new Session({
+      session_id: sessionId,
+      user_id: user.toString(),
+      metadata: { title, tags, text } || {},
+    });
+
+    try {
+      await SessionHandler.zepClient!.memory.addSession(newSession);
+      console.log(`New Zep Session ${sessionId} created.`);
+    } catch (error) {
+      console.error("Failed to create new Zep Session:", error);
+    }
+  }
+
+  public async deleteSession(sessionId: string): Promise<void> {
+    try {
+      const memory = await SessionHandler.zepClient!.memory.getMemory(sessionId);
+      if (!memory)
+        throw new Error("No Zep Memories found for this Session Id.");
+    } catch (e) { console.log(e);}
+
+    try {
+      await SessionHandler.zepClient?.memory.deleteMemory(sessionId);
+    } catch (e) { console.error("No memory to delete:", e); }
+
+    try {
+      this.sessionChains.delete(sessionId);
+    } catch (e) { console.error("No chain to delete:", e); }
   }
 
   public async getMemory(sessionId: string, email: string) {
@@ -166,46 +184,59 @@ class SessionHandler {
 
     const username = email.split("@")[0];
     const history = await SessionHandler.zepClient.memory.getMemory(sessionId);
-    if (!history) console.log('No history here!')
+    if (!history) console.log("No history here!");
     return history?.messages.map((message) => ({
-            text: message.content,
-            user: message.role === 'ai' ? 'AI-Therapist': username,
-            timestamp: new Date(message.created_at || '').toLocaleString()
-        })
-  )}
+      text: message.content,
+      user: message.role === "ai" ? "AI-Therapist" : username,
+      timestamp: new Date(message.created_at || "").toLocaleString(),
+    }));
+  }
 
   public async chat(sessionId: string, message: string) {
-    const chain = this.getChain(sessionId)
-    const session = await SessionHandler.zepClient?.memory.getSession(sessionId);
-    
-    if (!session || !session.metadata) throw new Error('No session or session metadata found.')
-    const sessionMessages = (await SessionHandler.zepClient?.message.getSessionMessages(sessionId))
-      ?.filter((message): message is Message => message === undefined) || [];
+    const chain = this.getChain(sessionId);
+    const session = await SessionHandler.zepClient?.memory.getSession(
+      sessionId
+    );
+
+    if (!session || !session.metadata)
+      throw new Error("No session or session metadata found.");
+    const sessionMessages =
+      (
+        await SessionHandler.zepClient?.message.getSessionMessages(sessionId)
+      )?.filter((message): message is Message => message === undefined) || [];
     const mergedMetadata = { ...session.metadata, userId: session.user_id };
-    const pineconeResponse = await pineconeQuery(message, sessionMessages, mergedMetadata)
+    const pineconeResponse = await pineconeQuery(
+      message,
+      sessionMessages,
+      mergedMetadata
+    );
     const context = pineconeResponse.map((match) => {
-        return new SystemMessage({ 
-            content: match?.metadata?.content as string || '',
-            response_metadata: {}
-        })
+      return new SystemMessage({
+        content: (match?.metadata?.content as string) || "",
+        response_metadata: {},
+      });
     });
     const options = { configurable: { sessionId } };
-    const input = { question: message, context, entryText: session.metadata.text }
-    const response = await chain?.invoke(input, options)
+    const input = {
+      question: message,
+      context,
+      entryText: session.metadata.text,
+    };
+    const response = await chain?.invoke(input, options);
 
     return {
       text: response?.content,
-      timestamp: new Date().toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
+      timestamp: new Date().toLocaleString("en-US", {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
         hour12: true,
       }),
-      user: 'AI-Therapist',
-      type: 'ai'
-    }
+      user: "AI-Therapist",
+      type: "ai",
+    };
   }
 }
 dotenv.config({ path: path.resolve("../.env") });

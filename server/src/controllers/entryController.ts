@@ -41,7 +41,12 @@ export const createEntry = async (req: Request, res: Response): Promise<void> =>
     newEntry.set(metadata);
     await newEntry.save({ session });
     
+    // Upsert to Pinecone
     await upsert({ userId, entryId: newEntry.id, text, date });
+
+    // Create Zep Session
+    await SessionHandler.createSession(newEntry);
+
     await commitTransaction(session);
     res.status(201).json(newEntry);
   } catch (error) {
@@ -109,18 +114,17 @@ const deleteEntryById = async (entryId: string, userId: string, session: any): P
   try {
     // Delete Mongoose Record
     const entry = await Entry.findByIdAndDelete(entryId, { session });
-    
     if (!entry) {
       throw new Error('Journal entry not found');
     }
     
-    // Delete Zep Session
+    // Delete Zep Sessions
     await SessionHandler.deleteSession(entryId);
+
     // Delete Pinecone Records
     const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
     const index = pc.index(process.env.PINECONE_INDEX!);
     
-    console.log({userId, entryId})
     const results = await index.namespace(userId).listPaginated({ prefix: `${entryId}#` });
     const vectorIds = results.vectors?.map((vector) => vector.id).filter((v): v is string => v !== undefined);
 
@@ -189,6 +193,9 @@ export const deleteUserAndEntries = async (req: Request, res: Response): Promise
       await deleteEntryById(entry._id.toString(), userId, session);
     }
 
+    // Delete Zep User
+    if (!userId) throw new Error('User not found.')
+    await SessionHandler.deleteUser(userId);
     // Delete the user
     await User.findByIdAndDelete(userId, { session });
 
