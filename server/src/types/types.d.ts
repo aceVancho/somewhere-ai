@@ -55,6 +55,13 @@ declare global {
     text: string;
     date: string;
   }
+
+  interface IPineconeQueryProps {
+    type: 'chat' | 'trends',
+    userId: string,
+    entryText?: string,
+    message?: string
+  }
 }
 
 

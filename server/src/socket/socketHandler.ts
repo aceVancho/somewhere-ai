@@ -30,15 +30,15 @@ class SocketHandler {
         socket.on('newEntryProgress', this.handleProgress.bind(this, socket))
     }
 
-    private async handleNewEntry(socket: Socket, data: { email: string}) {
+    private async handleNewEntry(socket: Socket, data: { email: string }) {
         const { email } = data;
         console.log(`New entry from ${email}`)
         this.newEntryProgressMap.set(email, 0)
     }
 
-    private async handleProgress(socket: Socket, data: { progress: number, email: string }) {
-        const { progress, email } = data;
-        console.log('Progress made: ', progress)
+    private async handleProgress(socket: Socket, data: { progress: number, email: string, message: string }) {
+        const { progress, email, message } = data;
+        console.log(`${ email}\nEntry progress: ${progress}\nMessage: ${message}`)
     }
 
     private async handleJoinSession(socket: Socket, data: { sessionId: string, email: string }) {

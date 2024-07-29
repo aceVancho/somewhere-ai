@@ -5,6 +5,7 @@ import { prompts } from "./prompts";
 import Entry from "../models/Entry";
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { io, Socket } from"socket.io-client"
+import { pineconeQuery } from "./query";
 dotenv.config({ path: path.resolve("../.env") });
 
 interface SummaryItem {
@@ -308,7 +309,7 @@ class CompletionHandler {
 
   public async getTrends(entry: IEntry): Promise<{ trends: string }> {
     console.log("6: Generating trends.")
-    const userId = entry.user;
+    const userId = entry.user.toString();
     let userEntries;
 
     try {
@@ -321,18 +322,18 @@ class CompletionHandler {
     if (!userEntries || userEntries.length === 0) {
       console.error("No entries found for user")
       // TODO: Fix
-      return { trends: 'No entries found for user.'}
+      return { trends: 'Trends require at least one entry to be generated.'}
     }
 
     userEntries = userEntries.filter(e => e._id.toString() !== entry._id.toString());
 
     // TODO: need to parse out _ids
-    const combinedSummaries = userEntries.map((e) => ({
-      [e.createdAt.toISOString()]: e.summaries,
-    }));
-
+    const combinedSummaries = userEntries.map((e) => ({ [e.createdAt.toISOString()]: e.summaries }));
     const formattedSummaries = JSON.stringify(combinedSummaries, null, 2)
 
+    // Matches
+    const matches = await pineconeQuery({ type: 'trends', userId, entryText: entry.text });
+    
     try {
       const completion = await openai.chat.completions.create({
         messages: [
@@ -340,8 +341,9 @@ class CompletionHandler {
             role: "system",
             content: prompts.getTrends,
           },
-          { role: "user", content: `Summaries: ${formattedSummaries}` },
           { role: "user", content: `Entry: ${entry.text}` },
+          { role: "user", content: `Matches: ${matches}` },
+          { role: "user", content: `Summaries: ${formattedSummaries}` },
         ],
         model,
         temperature: .8,
@@ -374,7 +376,7 @@ class CompletionHandler {
     summaries: SummaryItem[];
     trends: string;
   }> {
-    this.socket.emit('newEntryProgress', { progress: 69, email: entry.user });
+    this.socket.emit('newEntryProgress', { progress: 69, email: entry.user, message: 'Hello!' });
   
     try {
       const titlePromise = this.getTitle(entry);

@@ -9,7 +9,6 @@ import {
   MessagesPlaceholder,
 } from "@langchain/core/prompts";
 import { RunnableWithMessageHistory } from "@langchain/core/runnables";
-import { ObjectId } from "mongodb";
 import { pineconeQuery } from "./query";
 
 class SessionHandler {
@@ -194,33 +193,38 @@ class SessionHandler {
 
   public async chat(sessionId: string, message: string) {
     const chain = this.getChain(sessionId);
-    const session = await SessionHandler.zepClient?.memory.getSession(
-      sessionId
-    );
+    // TODO: Don't call this every time. Instead, set SessionHandler.sessions map to include sessionId, chain, and zep session
+    const session = await SessionHandler.zepClient?.memory.getSession(sessionId);
 
-    if (!session || !session.metadata)
-      throw new Error("No session or session metadata found.");
-    const sessionMessages =
-      (
-        await SessionHandler.zepClient?.message.getSessionMessages(sessionId)
-      )?.filter((message): message is Message => message === undefined) || [];
-    const mergedMetadata = { ...session.metadata, userId: session.user_id };
-    const pineconeResponse = await pineconeQuery(
+    if (!session || !session.metadata) throw new Error("No session or session metadata found.");
+
+    // let conversationHistory = await SessionHandler.zepClient?.message.getSessionMessages(sessionId);
+    // conversationHistory?.push(new Message({ role_type: 'user', content: message, role: 'human' }))
+    // conversationHistory = conversationHistory?.filter((message): message is Message => message === undefined)
+    // console.log('after history:', { conversationHistory })
+
+    const pineconeQueryProps: IPineconeQueryProps = { 
+      type: 'chat',
+      userId: session.user_id!,
       message,
-      sessionMessages,
-      mergedMetadata
-    );
-    const context = pineconeResponse.map((match) => {
-      return new SystemMessage({
-        content: (match?.metadata?.content as string) || "",
-        response_metadata: {},
+    }
+
+    const pineconeResponse = await pineconeQuery(pineconeQueryProps);
+    let context;
+
+    if (pineconeResponse) {
+      context = pineconeResponse.map((match) => {
+        return new SystemMessage({
+          content: (match?.metadata?.content as string) || "",
+          response_metadata: {},
+        });
       });
-    });
+    }
     const options = { configurable: { sessionId } };
     const input = {
       question: message,
-      context,
       entryText: session.metadata.text,
+      context,
     };
     const response = await chain?.invoke(input, options);
 
