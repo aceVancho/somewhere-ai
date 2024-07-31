@@ -6,6 +6,7 @@ import Entry from "../models/Entry";
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { io, Socket } from"socket.io-client"
 import { pineconeQuery } from "./query";
+
 dotenv.config({ path: path.resolve("../.env") });
 
 interface SummaryItem {
@@ -16,6 +17,8 @@ interface SummaryItem {
 interface SummaryResponse {
   summaries: SummaryItem[];
 }
+
+type IEntryTagsById = Pick<IEntry, 'id' | 'tags'>
 
 const openai = new OpenAI();
 const model = process.env.OPEN_AI_CHAT_MODEL!;
@@ -432,7 +435,176 @@ class CompletionHandler {
     }
   }
   
+  // TESTS
+
+  public getRelatedEntriesByTag = async(
+    entry: IEntry, entryTagsById: IEntryTagsById[]
+  ): Promise<{ relatedEntryIds: string[] }> => {
+    try {
+      const completion = await openai.chat.completions.create({
+        messages: [
+          {
+            role: "system",
+            content: `
+            You are an AI assistant that helps users analyze their journal entries. Given a new journal entry and its tags, your task is to compare these tags with a list of past journal entry tags and return the IDs of the journal entries whose tags most closely relate to the current entry's tags.
+
+            ### Instructions
+            - Compare the tags of the new journal entry with the tags of each past journal entry.
+            - Return the IDs of the past journal entries whose tags most closely relate to the tags of the new journal entry.
+            - Determine the closeness of tags by relevancy.
+
+            ### Output Format
+            Response should be in JSON format, like:
+            { "relatedEntryIds": ["entryId1", "entryId2", "entryId3"] }
+            `
+          },
+          { 
+            role: "user", 
+            content: `
+            Current entry tags: ${entry.tags}\n
+            Past entry tags by id: ${entryTagsById}
+            ` 
+          },
+        ],
+        model,
+        temperature: .8,
+        max_tokens: 4095,
+        top_p: .8,
+        frequency_penalty: 0.5,
+        presence_penalty: 0.3,
+        response_format: { type: "json_object" },
+      });
+
+      const response = completion?.choices[0]?.message?.content;
+      if (!response) throw new Error("OpenAI API returned an empty response");
+      return JSON.parse(response);
+    } catch (error) {
+      console.error("Error getRelatedEntriesByTag:", error);
+      throw new Error("Failed to getRelatedEntriesByTag");
+    }
+  }
+
+  public findEntriesForTrends = async (entryId: string, type: 'tags' | 'recency') => {
+    const entry = await Entry.findById(entryId).populate('user');
+    const userId = entry?.user.toString()
+    if (!entry || !userId) throw new Error('Entry or user not found.');
+    
+    const entryIdsForTrends = []
+    switch (type) {
+      case 'tags':
+        const entryTagsById: IEntryTagsById[] = (await Entry.find({ user: userId })).map((e) => ({ id: e.id, tags: e.tags}))
+        const relatedEntryIdsByTag = (await this.getRelatedEntriesByTag(entry, entryTagsById)).relatedEntryIds
+        entryIdsForTrends.push(...relatedEntryIdsByTag)
+      case 'recency':
+        const entries = await Entry.find({ user: userId }).sort({ createdAt: -1 }).limit(5);
+        entries.forEach((e) => entryIdsForTrends.push(e.id));
+        break;
+    }
+
+    const summaries = entryIdsForTrends.map(async (id) => ((await this.getSummary2(id)).summarizedEntry))
+    return summaries;
+  }
+
+  public getTrends2 = async (entry: IEntry, summaries: string[]): Promise<{ trends: string }> => {
+    try {
+      const completion = await openai.chat.completions.create({
+        messages: [
+          {
+            role: "system",
+            content: `
+            You are an AI assistant that distinguishes trends between journal entry summaries. Act as a therapist that provides meaningful feedback, advice, or questions by finding common themes or trends between past and present entries.
+
+            ### Instructions
+            - Evaluate the last journal entry summary.
+            - Evaluate previous journal entry summaries.
+            - Create a response that attempts to find meaningful connections between the user's most recent entry and their past entries.
+
+            ### Output Format
+            Response should be in JSON format, like:
+            { "trends": "Trends between summaries." }
+            `
+          },
+          { 
+            role: "user", 
+            content: `
+              Current Entry: ${entry.text}\n
+              Past entries: ${summaries}
+              ` 
+          },
+        ],
+        model,
+        temperature: .8,
+        max_tokens: 4095,
+        top_p: .8,
+        frequency_penalty: 0.5,
+        presence_penalty: 0.3,
+        response_format: { type: "json_object" },
+      });
+
+      const response = completion?.choices[0]?.message?.content;
+      if (!response) throw new Error("OpenAI API returned an empty response");
+      return JSON.parse(response);
+    } catch (error) {
+      console.error("Error getRelatedEntriesByTag:", error);
+      throw new Error("Failed to getRelatedEntriesByTag");
+    }
+  }
+
+  public getSummary2 = async (entryId: string): Promise<{ summarizedEntry: string }> => {
+    const entry = await Entry.findById(entryId);
+    if (!entry) throw new Error('Entry not found.');
+
+    const { text } = entry;
+    const { encoding_for_model } = require('tiktoken');
+    const enc = encoding_for_model('gpt-4');
+    const tokenIds = enc.encode(text);
+    const tokenCount = tokenIds.length;
+    const bufferTokenCount = 400;
+
+    try {
+      const completion = await openai.chat.completions.create({
+        messages: [
+          {
+            role: "system",
+            content: `
+            You are an AI assistant that helps shorten user journal entries. For the given entry, return an abridged version that leaves the most valuable or pertinent information.
+
+            ### Instructions
+            - Evaluate the journal entry.
+            - Return a shortened version of the entry.
+
+            ### Output Format
+            Response should be in JSON format, like:
+            { "summarizedEntry": "Summary of entry." }
+            `
+          },
+          { 
+            role: "user", 
+            content: `Current entry text: ${text}` 
+          },
+        ],
+        model,
+        temperature: .8,
+        max_tokens: tokenCount + bufferTokenCount,
+        top_p: .8,
+        frequency_penalty: 0.5,
+        presence_penalty: 0.3,
+        response_format: { type: "json_object" },
+      });
+
+      const response = completion?.choices[0]?.message?.content;
+      if (!response) throw new Error("OpenAI API returned an empty response");
+      return JSON.parse(response);
+    } catch (error) {
+      console.error("Error getRelatedEntriesByTag:", error);
+      throw new Error("Failed to getRelatedEntriesByTag");
+    }
+  }
+  
+  
+  // TESTS
 }
 
 dotenv.config({ path: path.resolve("../.env") });
+
 export default CompletionHandler;
