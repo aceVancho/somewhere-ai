@@ -33,13 +33,18 @@ export const createEntry = async (req: Request, res: Response): Promise<void> =>
     const { text, title } = req.body;
     const userId = req.user.id;
     const date = new Date().toLocaleString();
-    
+
     const newEntry = new Entry({ text, title, user: userId });
-    const completionHandler = new CompletionHandler(authToken)
-    const metadata = await completionHandler.createEntryMetadata(newEntry);
-    
-    newEntry.set(metadata);
+    const completionHandler = new CompletionHandler(authToken, newEntry);
+    await completionHandler.createEntryMetadata();
+
     await newEntry.save({ session });
+    // const newEntry = new Entry({ text, title, user: userId });
+    // const completionHandler = new CompletionHandler(authToken)
+    // const metadata = await completionHandler.createEntryMetadata(newEntry);
+    
+    // newEntry.set(metadata);
+    // await newEntry.save({ session });
     
     // Upsert to Pinecone
     await upsert({ userId, entryId: newEntry.id, text, date });

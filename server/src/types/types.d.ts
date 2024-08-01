@@ -27,10 +27,7 @@ declare global {
     sentiment: number;
     goals: string[];
     questions: string[],
-    summaries: [{
-      summary: { type: String, required: true },
-      quote: { type: String, required: true }
-    }],
+    summary: { type: String, required: true },
     trends: string,
     user: mongoose.Schema.Types.ObjectId;
     createdAt: Date;
