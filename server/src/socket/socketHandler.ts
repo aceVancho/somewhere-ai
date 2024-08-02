@@ -36,9 +36,9 @@ class SocketHandler {
         this.newEntryProgressMap.set(email, 0)
     }
 
-    private async handleProgress(socket: Socket, data: { progress: number, email: string, message: string }) {
-        const { progress, email, message } = data;
-        console.log(`${ email}\nEntry progress: ${progress}\nMessage: ${message}`)
+    private async handleProgress(socket: Socket, data: { progress: number, email: string, message: string, id: string }) {
+        const { progress, email, message, id } = data;
+        console.log(`Email: ${email} -> Entry (${id}) progress: ${progress} -> Message: ${message}`)
     }
 
     private async handleJoinSession(socket: Socket, data: { sessionId: string, email: string }) {

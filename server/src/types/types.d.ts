@@ -7,7 +7,7 @@ declare global {
     }
   }
 
-  interface IUser {
+  interface IUser extends mongoose.Document {
     email: string;
     password: string;
     createdAt: Date;
