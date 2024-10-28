@@ -12,16 +12,65 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/authContext";
 import { io, Socket } from "socket.io-client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function NewEntry() {
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+
   const [loading, setLoading] = useState<boolean>(false);
   const socketRef = useRef<Socket | null>(null);
-  const navigate = useNavigate();
+
+  useEffect(() => {
+    const editMode = searchParams.get("edit") === "true";
+    const entryId = searchParams.get("entryId");
+
+    if (editMode && entryId) {
+      setIsEditing(true);
+
+      const fetchData = async () => {
+        const entryToEdit = await fetchEntryToEdit(entryId);
+        if (entryToEdit) {
+          setTitle(entryToEdit.title);
+          setText(entryToEdit.text);
+        }
+      };
+
+      fetchData();
+    } 
+  }, [searchParams]);
+
+  const fetchEntryToEdit = async (entryIdToEdit: string) => {
+    try {
+      const response = await fetch(
+        `http://localhost:4001/api/entries/${entryIdToEdit}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem(
+              "somewhereAIToken"
+            )}`,
+          },
+        }
+      );
+      return await response.json();
+    } catch (error) {
+      console.error("Error getting entry:", error);
+    }
+  };
+
+  const handleEdit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    // TODO: Implement editing entry
+    console.log('Editing entry...');
+  }
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -106,7 +155,7 @@ export default function NewEntry() {
 
   return (
       <form
-        onSubmit={handleSubmit}
+        onSubmit={isEditing ? handleEdit : handleSubmit}
         className="my-5 w-11/12 h-full rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring overflow-y-auto p-5 flex flex-col"
       >
         <Label htmlFor="title" className="sr-only">
@@ -151,7 +200,7 @@ export default function NewEntry() {
             </Tooltip>
           </TooltipProvider>
           <Button type="submit" size="sm" className="ml-auto gap-1.5">
-            Submit
+            {isEditing ? 'Update' : 'Submit'}
             <CornerDownLeft className="size-3.5" />
           </Button>
         </div>

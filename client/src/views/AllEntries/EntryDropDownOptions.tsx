@@ -10,6 +10,7 @@ import {
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Edit, Ellipsis, Trash2 } from "lucide-react";
 import { useEntryContext } from "@/contexts/entryContext";
+import { useNavigate } from "react-router-dom";
 
 interface EntryDropDownOptionsProps {
   entry: {
@@ -62,9 +63,15 @@ const EntryDropDownOptions: React.FC<EntryDropDownOptionsProps> = ({ entry }) =>
     }
   };
 
+  const navigate = useNavigate();
+  const handleEdit = async (event: React.MouseEvent, entryId: string) => {
+    navigate('/new-entry?edit=true&entryId=' + entryId);
+}
+
   const DeleteEntryAlertDialogue: React.FC<{ entry: EntryDropDownOptionsProps["entry"] }> = ({ entry }) => {
     return (
       <AlertDialog>
+        {/* Delete Button */}
         <DropdownMenuItem onClick={(e) => e.preventDefault()}>
           <AlertDialogTrigger asChild>
             <div className="flex text-sm">
@@ -73,7 +80,7 @@ const EntryDropDownOptions: React.FC<EntryDropDownOptionsProps> = ({ entry }) =>
             </div>
           </AlertDialogTrigger>
         </DropdownMenuItem>
-
+        {/* Modal Content */}
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
@@ -111,7 +118,7 @@ const EntryDropDownOptions: React.FC<EntryDropDownOptionsProps> = ({ entry }) =>
         <DropdownMenuGroup>
           <DropdownMenuItem>
             <Edit className="mr-2 h-4 w-4" />
-            <span>Edit</span>
+            <span onClick={(event) => handleEdit(event, entry._id)}>Edit</span>
           </DropdownMenuItem>
           <DeleteEntryAlertDialogue entry={entry} />
         </DropdownMenuGroup>
