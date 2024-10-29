@@ -88,10 +88,10 @@ export const updateEntry = async (req: Request, res: Response): Promise<void> =>
   const session = await startTransaction();
 
   try {
-    const { title, text, tags } = req.body;
+    const { title, text } = req.body;
     const entry = await Entry.findByIdAndUpdate(
       req.params.id, 
-      { title, text, tags, updatedAt: Date.now() }, 
+      { title, text, updatedAt: Date.now() }, 
       { new: true, session }
     );
 

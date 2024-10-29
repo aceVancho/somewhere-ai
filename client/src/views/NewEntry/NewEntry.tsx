@@ -15,13 +15,14 @@ import { io, Socket } from "socket.io-client";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function NewEntry() {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
+  const [entryIdToEdit, setEntryIdToEdit] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -39,6 +40,7 @@ export default function NewEntry() {
         if (entryToEdit) {
           setTitle(entryToEdit.title);
           setText(entryToEdit.text);
+          setEntryIdToEdit(entryId);
         }
       };
 
@@ -68,12 +70,62 @@ export default function NewEntry() {
 
   const handleEdit = async (event: React.FormEvent) => {
     event.preventDefault();
-    // TODO: Implement editing entry
-    console.log('Editing entry...');
+    if (!text || !title) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter a title and some text.",
+      });
+      return;
+    }
+    setLoading(true);
+    
+    try {
+      const response = await fetch(
+        `http://localhost:4001/api/entries/${entryIdToEdit}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("somewhereAIToken")}`,
+          },
+          body: JSON.stringify({ title, text }),
+        }
+      );
+
+      if (response.ok) {
+        toast({
+          title: "Entry updated.",
+          description: `Your entry has been edited successfully.`,
+        });
+        setTitle("");
+        setText("");
+        navigate('/all-entries')
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error updating entry");
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: (error as Error).message,
+      });
+    } finally {
+      setLoading(false);
+    }
   }
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!text || !title) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter a title and some text.",
+      });
+      return;
+    }
     setLoading(true);
 
     if (!isAuthenticated || !user) {

@@ -70,16 +70,15 @@ const EntryDropDownOptions: React.FC<EntryDropDownOptionsProps> = ({ entry }) =>
 
   const DeleteEntryAlertDialogue: React.FC<{ entry: EntryDropDownOptionsProps["entry"] }> = ({ entry }) => {
     return (
-      <AlertDialog>
-        {/* Delete Button */}
-        <DropdownMenuItem onClick={(e) => e.preventDefault()}>
+      // TODO: Figure out why click only registers on span and not entire component
+      <DropdownMenuItem onClick={(event) => event.preventDefault()}>
+          <AlertDialog>
           <AlertDialogTrigger asChild>
             <div className="flex text-sm">
               <Trash2 className="mr-2 h-4 w-4" />
               <span>Delete</span>
             </div>
           </AlertDialogTrigger>
-        </DropdownMenuItem>
         {/* Modal Content */}
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -99,6 +98,7 @@ const EntryDropDownOptions: React.FC<EntryDropDownOptionsProps> = ({ entry }) =>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+        </DropdownMenuItem>
     );
   };
 
@@ -116,9 +116,9 @@ const EntryDropDownOptions: React.FC<EntryDropDownOptionsProps> = ({ entry }) =>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
         <DropdownMenuGroup>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={(event) => handleEdit(event, entry._id)}>
             <Edit className="mr-2 h-4 w-4" />
-            <span onClick={(event) => handleEdit(event, entry._id)}>Edit</span>
+            <span>Edit</span>
           </DropdownMenuItem>
           <DeleteEntryAlertDialogue entry={entry} />
         </DropdownMenuGroup>
