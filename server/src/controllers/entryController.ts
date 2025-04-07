@@ -89,17 +89,40 @@ export const updateEntry = async (req: Request, res: Response): Promise<void> =>
 
   try {
     const { title, text } = req.body;
+    const entryId = req.params.id;
+    const userId = req.user.id;
     const entry = await Entry.findByIdAndUpdate(
       req.params.id, 
       { title, text, updatedAt: Date.now() }, 
       { new: true, session }
-    );
+    ).populate('user');
 
     if (!entry) {
       await abortTransaction(session);
       res.status(404).json({ error: 'Journal entry not found' });
       return;
     }
+
+    // Delete existing Pinecone vectors associated with this entry
+    const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
+    const index = pc.index(process.env.PINECONE_INDEX!);
+
+    const existingVectors = await index
+      .namespace(userId)
+      .listPaginated({ prefix: `${entryId}#` });
+
+    const vectorIds = existingVectors.vectors
+      ?.map((vector) => vector.id)
+      .filter((v): v is string => v !== undefined);
+
+    if (vectorIds && vectorIds.length > 0) {
+      await index.namespace(userId).deleteMany(vectorIds);
+    }
+
+    // Re-upsert the updated data into Pinecone
+    const date = new Date().toLocaleString();
+    await upsert({ userId, entryId, text, date });
+    
 
     await commitTransaction(session);
     res.status(200).json(entry);
