@@ -118,7 +118,7 @@ export default function NewEntry() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!text || !title) {
+    if (!text) {
       toast({
         variant: "destructive",
         title: "Error",
