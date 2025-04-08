@@ -13,6 +13,13 @@ import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/authContext";
 import { io, Socket } from "socket.io-client";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import GeneratePromptsBtn from "./GeneratePromptsBtn";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card"
+
 
 export default function NewEntry() {
   const navigate = useNavigate();
@@ -27,6 +34,12 @@ export default function NewEntry() {
 
   const [loading, setLoading] = useState<boolean>(false);
   const socketRef = useRef<Socket | null>(null);
+
+  // Prompts
+  const [prompts, setPrompts] = useState<string[]>([]); // Sets server data
+  const [prompt, setPrompt] = useState<string>(""); // Sets user input
+  const [promptsLoading, setPromptsLoading] = useState<boolean>(false);
+
 
   useEffect(() => {
     const editMode = searchParams.get("edit") === "true";
@@ -47,6 +60,43 @@ export default function NewEntry() {
       fetchData();
     } 
   }, [searchParams]);
+
+  const handleGetPrompts = async () => {
+    setPromptsLoading(true);
+    try {
+      const response = await fetch(
+        `http://localhost:4001/api/entries/prompts/${user?._id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("somewhereAIToken")}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
+  
+      const data = await response.json();
+      setPrompts(data.prompts);
+      setPromptsLoading(false);
+      console.log({ data })
+      toast({
+        title: "Requested Prompts",
+        description: `...`,
+      });
+    } catch (error) {
+      console.error('Could not request prompts.', error);
+      toast({
+          variant: "destructive",
+          title: "Error",
+          description: (error as Error).message,
+        });
+    }
+    setPromptsLoading(false);
+  }
 
   const fetchEntryToEdit = async (entryIdToEdit: string) => {
     try {
@@ -208,7 +258,7 @@ export default function NewEntry() {
   return (
       <form
         onSubmit={isEditing ? handleEdit : handleSubmit}
-        className="my-5 w-11/12 h-full rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring overflow-y-auto p-5 flex flex-col"
+        className="sm:w-11/12 md:w-11/12 my-5 lg:w-7/12 h-full rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring overflow-y-auto p-5 flex flex-col"
       >
         <Label htmlFor="title" className="sr-only">
           Title
@@ -250,6 +300,28 @@ export default function NewEntry() {
               </TooltipTrigger>
               <TooltipContent side="top">Use Microphone</TooltipContent>
             </Tooltip>
+            <GeneratePromptsBtn 
+              handleGetPrompts={handleGetPrompts} 
+              promptsLoading={promptsLoading} 
+              prompts={prompts}
+              setPrompt={setPrompt}
+              />
+              { prompt && (
+                <HoverCard>
+                    <HoverCardTrigger asChild>
+                      <Button variant="link">Show Prompt</Button>
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-80">
+                      <div className="flex justify-between space-x-4">
+                        <div className="space-y-1">
+                          <p className="text-sm">
+                            {prompt}
+                          </p>
+                        </div>
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
+              )}
           </TooltipProvider>
           <Button type="submit" size="sm" className="ml-auto gap-1.5">
             {isEditing ? 'Update' : 'Submit'}

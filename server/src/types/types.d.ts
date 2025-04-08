@@ -62,6 +62,12 @@ declare global {
     entryText?: string,
     message?: string
   }
+
+  interface ILatestEntriesProps {
+    title: string;
+    text: string;
+    tags: string[];
+  }
 }
 
 
