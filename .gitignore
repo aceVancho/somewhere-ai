@@ -13,6 +13,7 @@ dist-ssr
 *.local
 .env
 server/config
+server/api/prompts.ts
 
 # Editor directories and files
 .vscode/*
