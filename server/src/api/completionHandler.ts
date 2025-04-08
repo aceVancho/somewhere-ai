@@ -29,6 +29,45 @@ class CompletionHandler {
     this.socket.on('connect', () => console.log('Completion Handler connected to socket.'))
   }
 
+
+
+  public async getPrompts(latestEntriesProps: ILatestEntriesProps[]): Promise<{ title: string }> {
+    const formattedEntriesProps = latestEntriesProps.map((entry, idx) => (`
+      Entry ${idx + 1}:
+      Title: ${entry.title}
+      Tags: ${entry.tags.join(", ")}
+      Text: ${entry.text}
+      `)).join("\n");
+      // console.log("1: Generating prompts...", formattedEntriesProps)
+
+    try {
+      const completion = await openai.chat.completions.create({
+        messages: [
+          { role: "system", content: prompts.getPrompts },
+          { role: "user", content: `Latest Entry Props: ${formattedEntriesProps}` },
+        ],
+        model,
+        temperature: .8,
+        max_tokens: 4095,
+        top_p: .8,
+        frequency_penalty: 0.5,
+        presence_penalty: 0.3,
+        response_format: { type: "json_object" },
+      });
+
+      const response = completion?.choices[0]?.message?.content;
+
+      if (!response) {
+        throw new Error("OpenAI API returned an empty response");
+      }
+
+      return JSON.parse(response);
+    } catch (error) {
+      console.error("Error generating prompts:", error);
+      throw new Error("Failed to generate prompts");
+    }
+  }
+
   public async getTitle(entry: IEntry): Promise<{ title: string }> {
     console.log("1: Generating title.")
     if (entry.title) return { title: entry.title }

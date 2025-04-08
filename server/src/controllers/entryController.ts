@@ -5,6 +5,7 @@ import { upsert } from '../api/upsert';
 import { Pinecone } from '@pinecone-database/pinecone';
 import CompletionHandler from '../api/completionHandler';
 import SessionHandler from '../api/sessionHandler';
+import { title } from 'process';
 
 const startTransaction = async () => {
   const session = await Entry.startSession();
@@ -229,6 +230,32 @@ export const deleteUserAndEntries = async (req: Request, res: Response): Promise
     await abortTransaction(session);
     console.error('Error deleting user and associated entries:', error);
     res.status(500).json({ error: 'Error deleting user and associated entries.' });
+  }
+};
+
+let number = 1
+
+export const getPrompts = async (req: Request, res: Response): Promise<void> => {
+  let { authorization: authToken } = req.headers
+  if (!authToken) throw new Error('User not logged in.')
+  authToken = authToken?.split(' ')[1]
+
+  console.log('Request #:', number++)
+
+  const session = await startTransaction();
+  const { id: userId } = req.params;
+  const latestEntries = await Entry.find({ user: userId })
+  .sort({ createdAt: -1 })
+  .limit(3);
+
+  const latestEntryProps = latestEntries.map((entry) => ({ title: entry.title, text: entry.text, tags: entry.tags }));
+  const completionHandler = new CompletionHandler(authToken)
+  const prompts = await completionHandler.getPrompts(latestEntryProps);
+
+  if (prompts) {
+    res.status(200).json(prompts);
+  } else {
+    res.status(404).json({ error: 'No prompts found' });
   }
 };
 

@@ -52,4 +52,7 @@ process.on('SIGINT', async () => {
 // TODO:
 // - Switch to Okta
 // - Pricing models
-// - Prompts
+// - New Entry prompts
+// - Limit new/edit entry size
+// - Advice
+// - Positive/Negative Perspectives
