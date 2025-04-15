@@ -19,6 +19,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 
 export default function NewEntry() {
@@ -84,8 +85,8 @@ export default function NewEntry() {
       setPromptsLoading(false);
       console.log({ data })
       toast({
-        title: "Requested Prompts",
-        description: `...`,
+        title: "Generated Prompts 📝",
+        description: `Personalized Prompts Successfully Created`,
       });
     } catch (error) {
       console.error('Could not request prompts.', error);
@@ -256,9 +257,21 @@ export default function NewEntry() {
   }
 
   return (
+    <div className="sm:w-11/12 md:w-11/12 my-5 lg:w-7/12 h-full overflow-y-auto p-5 flex flex-col"
+>
+    { prompt && (
+      <Card className="shadow-none">
+        <CardHeader className="font-light">
+          <CardTitle className="text-sm font-medium">Prompt</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm">
+          {prompt}
+        </CardContent>
+      </Card>
+    )}
       <form
         onSubmit={isEditing ? handleEdit : handleSubmit}
-        className="sm:w-11/12 md:w-11/12 my-5 lg:w-7/12 h-full rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring overflow-y-auto p-5 flex flex-col"
+        className="my-5 h-full rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring overflow-y-auto p-5 flex flex-col"
       >
         <Label htmlFor="title" className="sr-only">
           Title
@@ -284,50 +297,26 @@ export default function NewEntry() {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Paperclip className="size-4" />
-                  <span className="sr-only">Attach file</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top">Attach File</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button type="button" variant="ghost" size="icon">
                   <Mic className="size-4" />
                   <span className="sr-only">Use Microphone</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="top">Use Microphone</TooltipContent>
             </Tooltip>
-            <GeneratePromptsBtn 
-              handleGetPrompts={handleGetPrompts} 
-              promptsLoading={promptsLoading} 
-              prompts={prompts}
-              setPrompt={setPrompt}
-              />
-              { prompt && (
-                <HoverCard>
-                    <HoverCardTrigger asChild>
-                      <Button variant="link">Show Prompt</Button>
-                    </HoverCardTrigger>
-                    <HoverCardContent className="w-80">
-                      <div className="flex justify-between space-x-4">
-                        <div className="space-y-1">
-                          <p className="text-sm">
-                            {prompt}
-                          </p>
-                        </div>
-                      </div>
-                    </HoverCardContent>
-                  </HoverCard>
-              )}
           </TooltipProvider>
+          <GeneratePromptsBtn 
+            handleGetPrompts={handleGetPrompts} 
+            promptsLoading={promptsLoading} 
+            prompts={prompts}
+            setPrompt={setPrompt}
+            />
           <Button type="submit" size="sm" className="ml-auto gap-1.5">
             {isEditing ? 'Update' : 'Submit'}
             <CornerDownLeft className="size-3.5" />
           </Button>
         </div>
       </form>
+    </div>
   );
 }
