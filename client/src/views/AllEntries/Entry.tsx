@@ -14,7 +14,7 @@ const Entry: React.FC<EntryProps> = ({entry}) => {
   return (
     <AccordionItem value={entry._id} className="my-4 border rounded-md shadow-md">
       <EntryHeader entry={entry} />
-      <AccordionContent asChild className="">
+      <AccordionContent asChild className="px-10">
         <Separator className="mb-5" />
         <Tabs defaultValue="Entry" className="w-full mt-2">
           <div className="flex justify-center">

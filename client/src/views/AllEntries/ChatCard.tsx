@@ -129,8 +129,8 @@ const ChatCard: React.FC<EntryProps> = ({ entry }) => {
         ref={refProp}
         className={`m-2 ${msg.type} ${
           msg.type === "ai"
-            ? "bg-muted text-left"
-            : "bg-primary text-white text-right"
+            ? "bg-muted text-left w-full lg:w-3/4 self-start"
+            : "bg-primary text-white text-right w-full lg:w-3/4 self-end"
         }`}
       >
         <CardHeader>
