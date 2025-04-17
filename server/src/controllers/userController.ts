@@ -243,3 +243,7 @@ export const resetPassword = async (req: Request, res: Response) => {
   }
 };
 
+export const uploadProfilePhoto = async (req: Request, res: Response) => {
+  console.log("Uploading profile photo...");
+  return res.status(200).json({ message: "Profile photo uploaded." });
+}

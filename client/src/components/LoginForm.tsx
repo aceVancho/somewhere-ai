@@ -172,6 +172,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ switchToSignUp }) => {
                         </button>
                       </div>
                     </FormControl>
+                    {/* TODO: This needs to not allow empty input when not signed in */}
                     <div className="flex justify-end">
                       <RequestPasswordResetBtn {...requestPasswordResetBtnProps} />
                     </div>
