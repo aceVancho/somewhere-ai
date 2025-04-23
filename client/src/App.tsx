@@ -7,7 +7,7 @@ import { EntryProvider } from './contexts/entryContext';
 import AllEntries from './views/AllEntries/AllEntries';
 import NewEntry from './views/NewEntry/NewEntry';
 import Profile from './views/Profile/Profile';
-import { Login } from './components/Login';
+import { Login } from './views/Login/Login';
 import Layout from './components/Layout';
 import { Skeleton } from './components/ui/skeleton';
 import { ResetToken } from './views/Profile/ResetToken';

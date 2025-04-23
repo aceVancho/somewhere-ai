@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
-import { useAuth } from "../contexts/authContext";
-import ModeToggle from "./ModeToggle";
-import DropdownAvatar from "./DropdownAvatar";
-import { useLogo } from "./Logo";
+import { useAuth } from "../../contexts/authContext";
+import ModeToggle from "../../components/ModeToggle";
+import DropdownAvatar from "../../components/DropdownAvatar";
+import { useLogo } from "../../components/Logo";
 import {
   BarChart4,
   Folder,
@@ -20,7 +20,7 @@ import {
   SheetTrigger,
   SheetClose,
 } from "@/components/ui/sheet";
-import { Separator } from "./ui/separator";
+import { Separator } from "../../components/ui/separator";
 import { useNavigate } from "react-router-dom";
 
 const MobileEntriesGroup = () => {

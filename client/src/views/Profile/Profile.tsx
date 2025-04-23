@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { RequestPasswordResetBtn } from "./RequestPasswordResetBtn";
+import { AuthPwResetBtn } from "./AuthPwResetBtn";
 import DeleteUserBtn from "./DeleteUserBtn";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -48,7 +48,7 @@ const Profile: React.FC = () => {
     }
   }
 
-  const requestPasswordResetBtnProps = {
+  const authPwResetBtnProps = {
       email: user?.email || '',
       isAuthenticated: isAuthenticated
   }
@@ -110,8 +110,8 @@ const ProfilePhotoUploadButton = () => {
       const result = await response.json();
       if (result) {
         toast({
-          title: "Profile Photo Uploaded",
-          description: 'Lookin\' good! 👤🤳',
+          title: 'Lookin good! 👤🤳',
+          description: "Photo Uploaded Successfully",
         });
       }
 
@@ -161,7 +161,7 @@ const ProfilePhotoUploadButton = () => {
         <CardContent>
           <div className="flex flex-col mt-2 space-y-3">
             <Label>Actions</Label>
-            <RequestPasswordResetBtn {...requestPasswordResetBtnProps } />
+            <AuthPwResetBtn {...authPwResetBtnProps } />
             <DeleteAllEntriesBtn deleteAllEntries={handleDeleteAllEntries}/>
             <DeleteUserBtn deleteUser={handleDeleteUser} />
           </div>

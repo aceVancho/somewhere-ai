@@ -10,33 +10,16 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/authContext";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
-import { ReactEventHandler, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
-interface RequestPasswordResetBtnProps {
+interface AuthPwResetBtnProps {
   email: string;
   isAuthenticated: boolean
 }
 
-export const RequestPasswordResetBtn: React.FC<
-  RequestPasswordResetBtnProps
-> = ({ isAuthenticated, email }) => {
+export const AuthPwResetBtn: React.FC<AuthPwResetBtnProps> = ({ isAuthenticated, email }) => {
 
   const { verifyUser } = useAuth();
   const { toast } = useToast();
@@ -72,10 +55,7 @@ export const RequestPasswordResetBtn: React.FC<
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        {isAuthenticated 
-        ? <Button variant="outline">Request Password Reset</Button>
-        : <Button variant="link">Forgot Password?</Button> 
-        }
+        <Button variant="outline">Request Password Reset</Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

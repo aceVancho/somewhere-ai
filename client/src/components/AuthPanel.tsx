@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import ModeToggle from '@/components/ModeToggle';
 import { useLogo } from '@/components/Logo';
-import { LoginForm } from './LoginForm';
-import { SignUpForm } from './SignUpForm';
+import { LoginForm } from '../views/Login/LoginForm';
+import { SignUpForm } from '../views/Login/SignUpForm';
 
 export const AuthPanel: React.FC = () => {
   const [isSignUp, setIsSignUp] = useState(false);

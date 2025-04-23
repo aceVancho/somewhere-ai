@@ -56,3 +56,11 @@ process.on('SIGINT', async () => {
 // - Limit new/edit entry size
 // - Advice
 // - Positive/Negative Perspectives
+// - Email Server
+// - Fix login page password reset
+// - About Page
+// - Track Goals (also they are a slightly too heavy font weight)
+// - Change "Contact" to "Support" and have it email me
+// - Meh. Consider Nixing the Sentiment thing.
+// - Accurately track new entry progress
+// - Search by tags

@@ -4,7 +4,7 @@ import { Accordion } from "@/components/ui/accordion";
 import Entry from "./Entry";
 import { useEntryContext } from "../../contexts/entryContext";
 import { Button } from "@/components/ui/button";
-import NavPanel from "@/components/NavPanel";
+
 import { useNavigate } from "react-router-dom";
 
 interface IEntry {

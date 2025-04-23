@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import NavPanel from './NavPanel'; // Adjust the import path as necessary
+import NavPanel from '../views/NavPanel/NavPanel'; // Adjust the import path as necessary
 import { useAuth } from '@/contexts/authContext';
 import { AuthPanel } from './AuthPanel';
 

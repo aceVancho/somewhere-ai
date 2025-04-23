@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { useAuth } from "../contexts/authContext";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useAuth } from "../../contexts/authContext";
+import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -19,14 +19,7 @@ import { ToastAction } from "@/components/ui/toast";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import 'animate.css';
-import { RequestPasswordResetBtn } from "@/views/Profile/RequestPasswordResetBtn";
-import { ExclamationTriangleIcon } from "@radix-ui/react-icons"
- 
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@/components/ui/alert"
+import { UnauthPwResetBtn } from "./UnauthPwResetBtn";
 
 const FormSchema = z.object({
   email: z.string().min(2, {
@@ -42,7 +35,7 @@ interface LoginFormProps {
 }
 
 export const LoginForm: React.FC<LoginFormProps> = ({ switchToSignUp }) => {
-  const { login, user, isAuthenticated, verifyUser } = useAuth();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -93,11 +86,6 @@ export const LoginForm: React.FC<LoginFormProps> = ({ switchToSignUp }) => {
       setShowPassword(true);
     }
   };
-
-  const requestPasswordResetBtnProps = {
-    isAuthenticated: isAuthenticated,
-    email
-}
 
   return (
     <div className="w-full flex-1 flex flex-col relative h-screen">
@@ -174,7 +162,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ switchToSignUp }) => {
                     </FormControl>
                     {/* TODO: This needs to not allow empty input when not signed in */}
                     <div className="flex justify-end">
-                      <RequestPasswordResetBtn {...requestPasswordResetBtnProps} />
+                      <UnauthPwResetBtn/>
                     </div>
                     <FormMessage />
                   </FormItem>
