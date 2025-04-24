@@ -1,7 +1,9 @@
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import NewEntryFormBtnBar from "./NewEntryFormBtnBar";
+import Editor from "./Editor";
+
+
 
 interface EntryFormProps {
   title: string;
@@ -18,22 +20,23 @@ interface EntryFormProps {
 }
 
 export function EntryForm({
-  title,
-  text,
-  prompt,
-  isEditing,
-  prompts,
-  promptsLoading,
-  setTitle,
-  setText,
-  setPrompt,
-  handleGetPrompts,
-  handleEntrySubmit,
-}: EntryFormProps) {
-  return (
-    <div className="h-full overflow-y-auto p-5 flex flex-col">
+        title,
+        text,
+        prompt,
+        isEditing,
+        prompts,
+        promptsLoading,
+        setTitle,
+        setText,
+        setPrompt,
+        handleGetPrompts,
+        handleEntrySubmit,
+    }: EntryFormProps) {
+    
+    return (
+        <div className="h-full overflow-y-auto p-5 flex flex-col">
       {prompt && (
-        <div className="mb-4 text-sm border p-4 rounded bg-muted text-muted-foreground">
+          <div className="mb-4 text-sm border p-4 rounded bg-muted text-muted-foreground">
           <p><strong>Prompt:</strong> {prompt}</p>
         </div>
       )}
@@ -50,21 +53,13 @@ export function EntryForm({
           className="whitespace-pre-wrap min-h-12 resize-none border-0 p-3 shadow-none focus-visible:ring-0 mb-4 flex-2"
         />
         <Label htmlFor="text" className="sr-only">Message</Label>
-        <Textarea
-          id="text"
-          placeholder="Let it all out..."
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          className="min-h-12 resize-none border-0 p-3 shadow-none focus-visible:ring-0 mb-4 flex-grow"
-        />
-        {/* <Editor /> */}
-        <NewEntryFormBtnBar
+        <Editor           
+            setText={setText}  
             handleGetPrompts={handleGetPrompts}
             promptsLoading={promptsLoading}
             prompts={prompts}
             setPrompt={setPrompt}
-            isEditing={isEditing}
-        />
+            isEditing={isEditing} />
       </form>
     </div>
   );

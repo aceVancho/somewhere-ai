@@ -210,3 +210,49 @@
     -webkit-transform: scaleY(1.0);
   }
 }
+
+.textBold {
+  font-weight: bold;
+}
+
+.textItalic {
+  font-style: italic;
+}
+
+.textUnderline {
+  text-decoration: underline;
+}
+
+.textStrikethrough {
+  text-decoration: line-through;
+}
+
+.textBoldItalic {
+  font-weight: bold;
+  font-style: italic;
+}
+
+.textBoldUnderline {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.textItalicUnderline {
+  font-style: italic;
+  text-decoration: underline;
+}
+
+.textBoldItalicUnderline {
+  font-weight: bold;
+  font-style: italic;
+  text-decoration: underline;
+}
+
+/* index.css or global CSS */
+[contenteditable="true"][placeholder]:empty::before {
+  content: attr(placeholder);
+  color: #9ca3af; /* Tailwind: text-muted-foreground */
+  pointer-events: none;
+  display: block;
+  position: absolute;
+}

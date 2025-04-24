@@ -1,6 +1,5 @@
 import { useEntry } from "./useEntry";
 import { EntryForm } from "./EntryForm";
-import { PromptCard } from "./PromptCard";
 
 export default function NewEntry() {
   const {
@@ -27,7 +26,6 @@ export default function NewEntry() {
 
   return (
     <div className="sm:w-11/12 md:w-11/12 my-5 lg:w-7/12 h-full overflow-y-auto p-5 flex flex-col">
-      {prompt && <PromptCard prompt={prompt} />}
       <EntryForm
         title={title}
         text={text}
