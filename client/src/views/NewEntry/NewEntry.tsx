@@ -1,243 +1,12 @@
-import React, { useEffect, useState, useRef } from "react";
-import { CornerDownLeft, Mic, Paperclip } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useToast } from "@/components/ui/use-toast";
-import { useAuth } from "@/contexts/authContext";
-import { io, Socket } from "socket.io-client";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import GeneratePromptsBtn from "./GeneratePromptsBtn";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-
+import { useEntry } from "./useEntry";
+import { EntryForm } from "./EntryForm";
+import { PromptCard } from "./PromptCard";
 
 export default function NewEntry() {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const { user, isAuthenticated } = useAuth();
-  const [searchParams] = useSearchParams();
-
-  const [title, setTitle] = useState("");
-  const [text, setText] = useState("");
-  const [entryIdToEdit, setEntryIdToEdit] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-
-  const [loading, setLoading] = useState<boolean>(false);
-  const socketRef = useRef<Socket | null>(null);
-
-  // Prompts
-  const [prompts, setPrompts] = useState<string[]>([]); // Sets server data
-  const [prompt, setPrompt] = useState<string>(""); // Sets user input
-  const [promptsLoading, setPromptsLoading] = useState<boolean>(false);
-
-
-  useEffect(() => {
-    const editMode = searchParams.get("edit") === "true";
-    const entryId = searchParams.get("entryId");
-
-    if (editMode && entryId) {
-      setIsEditing(true);
-
-      const fetchData = async () => {
-        const entryToEdit = await fetchEntryToEdit(entryId);
-        if (entryToEdit) {
-          setTitle(entryToEdit.title);
-          setText(entryToEdit.text);
-          setEntryIdToEdit(entryId);
-        }
-      };
-
-      fetchData();
-    } 
-  }, [searchParams]);
-
-  const handleGetPrompts = async () => {
-    setPromptsLoading(true);
-    try {
-      const response = await fetch(
-        `http://localhost:4001/api/entries/prompts/${user?._id}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("somewhereAIToken")}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Request failed with status ${response.status}`);
-      }
-  
-      const data = await response.json();
-      setPrompts(data.prompts);
-      setPromptsLoading(false);
-      console.log({ data })
-      toast({
-        title: "Generated Prompts 📝",
-        description: `Personalized Prompts Successfully Created`,
-      });
-    } catch (error) {
-      console.error('Could not request prompts.', error);
-      toast({
-          variant: "destructive",
-          title: "Error",
-          description: (error as Error).message,
-        });
-    }
-    setPromptsLoading(false);
-  }
-
-  const fetchEntryToEdit = async (entryIdToEdit: string) => {
-    try {
-      const response = await fetch(
-        `http://localhost:4001/api/entries/${entryIdToEdit}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem(
-              "somewhereAIToken"
-            )}`,
-          },
-        }
-      );
-      return await response.json();
-    } catch (error) {
-      console.error("Error getting entry:", error);
-    }
-  };
-
-  const handleEdit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!text || !title) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please enter a title and some text.",
-      });
-      return;
-    }
-    setLoading(true);
-    
-    try {
-      const response = await fetch(
-        `http://localhost:4001/api/entries/${entryIdToEdit}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("somewhereAIToken")}`,
-          },
-          body: JSON.stringify({ title, text }),
-        }
-      );
-
-      if (response.ok) {
-        toast({
-          title: "Entry updated.",
-          description: `Your entry has been edited successfully.`,
-        });
-        setTitle("");
-        setText("");
-        navigate('/all-entries')
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Error updating entry");
-      }
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: (error as Error).message,
-      });
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!text) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please enter a title and some text.",
-      });
-      return;
-    }
-    setLoading(true);
-
-    if (!isAuthenticated || !user) {
-      toast({
-        variant: "destructive",
-        title: "Not authenticated",
-        description: "You need to be logged in to create an entry.",
-      });
-      setLoading(false);
-      return;
-    }
-
-    if (!socketRef.current) {
-      const newEntrySocketOptions = { auth: { token: localStorage.getItem("somewhereAIToken") } };
-      socketRef.current = io('http://localhost:4001', newEntrySocketOptions);
-
-      socketRef.current.on('connect', () => {
-        console.log('newEntrySocket connected to meGPT Server.');
-        socketRef.current?.emit('newEntry', { email: user.email });
-      });
-
-      socketRef.current.on('disconnect', () => {
-        console.log('Socket disconnected.');
-      });
-    } else {
-      socketRef.current.emit('newEntry', { email: user.email });
-    }
-
-    try {
-      const response = await fetch("http://localhost:4001/api/entries/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("somewhereAIToken")}`,
-        },
-        body: JSON.stringify({ text, title }),
-      });
-
-      if (response.ok) {
-        toast({
-          title: "Entry created",
-          description: `Your entry has been created successfully.`,
-        });
-        setTitle("");
-        setText("");
-        navigate('/all-entries')
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Error creating entry");
-      }
-    } catch (error) {
-      console.error("Error creating entry:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: (error as Error).message,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    state: { title, text, loading, prompts, prompt, promptsLoading, isEditing },
+    actions: { setTitle, setText, setPrompt, handleGetPrompts, handleEntrySubmit },
+  } = useEntry();
 
   if (loading) {
     return (
@@ -257,66 +26,21 @@ export default function NewEntry() {
   }
 
   return (
-    <div className="sm:w-11/12 md:w-11/12 my-5 lg:w-7/12 h-full overflow-y-auto p-5 flex flex-col"
->
-    { prompt && (
-      <Card className="shadow-none">
-        <CardHeader className="font-light">
-          <CardTitle className="text-sm font-medium">Prompt</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm">
-          {prompt}
-        </CardContent>
-      </Card>
-    )}
-      <form
-        onSubmit={isEditing ? handleEdit : handleSubmit}
-        className="my-5 h-full rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring overflow-y-auto p-5 flex flex-col"
-      >
-        <Label htmlFor="title" className="sr-only">
-          Title
-        </Label>
-        <Textarea
-          id="title"
-          placeholder="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="whitespace-pre-wrap min-h-12 resize-none border-0 p-3 shadow-none focus-visible:ring-0 mb-4 flex-2"
-        />
-        <Label htmlFor="text" className="sr-only">
-          Message
-        </Label>
-        <Textarea
-          id="text"
-          placeholder="What are you feeling..."
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          className="min-h-12 resize-none border-0 p-3 shadow-none focus-visible:ring-0 mb-4 flex-grow"
-        />
-        <div className="flex items-center p-3 pt-0 justify-between">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button type="button" variant="ghost" size="icon">
-                  <Mic className="size-4" />
-                  <span className="sr-only">Use Microphone</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top">Use Microphone</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <GeneratePromptsBtn 
-            handleGetPrompts={handleGetPrompts} 
-            promptsLoading={promptsLoading} 
-            prompts={prompts}
-            setPrompt={setPrompt}
-            />
-          <Button type="submit" size="sm" className="ml-auto gap-1.5">
-            {isEditing ? 'Update' : 'Submit'}
-            <CornerDownLeft className="size-3.5" />
-          </Button>
-        </div>
-      </form>
+    <div className="sm:w-11/12 md:w-11/12 my-5 lg:w-7/12 h-full overflow-y-auto p-5 flex flex-col">
+      {prompt && <PromptCard prompt={prompt} />}
+      <EntryForm
+        title={title}
+        text={text}
+        prompt={prompt}
+        isEditing={isEditing}
+        prompts={prompts}
+        promptsLoading={promptsLoading}
+        setTitle={setTitle}
+        setText={setText}
+        setPrompt={setPrompt}
+        handleGetPrompts={handleGetPrompts}
+        handleEntrySubmit={handleEntrySubmit}
+      />
     </div>
   );
 }
