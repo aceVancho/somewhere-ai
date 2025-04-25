@@ -49,13 +49,13 @@ export default function GeneratePromptsBtn({ handleGetPrompts, promptsLoading, p
                 </TooltipProvider>
             <DialogContent className="sm:max-w-md flex flex-col w-full">
                 <DialogHeader className="items-center ">
-                    <DialogTitle className="text-md font-medium">
+                    <DialogTitle className="text-primary text-md font-semibold">
                         {promptsLoading ? "Loading..." : "Select a Prompt"}
                     </DialogTitle>
                 </DialogHeader>
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-col items-center space-x-2">
                     { 
-                        promptsLoading 
+                        promptsLoading
                             ? (
                                 <div className='my-3'>
                                     <SkeletonContainer />
@@ -85,9 +85,9 @@ export default function GeneratePromptsBtn({ handleGetPrompts, promptsLoading, p
                 <DialogClose asChild>
                     <Button type="button" variant="secondary">Close</Button>
                 </DialogClose>
-                <Button type="button" size="sm" className="px-3 mt-1">
+                {/* <Button type="button" size="sm" className="px-3 mt-1">
                     Refresh Prompts
-                </Button>
+                </Button> */}
                 </DialogFooter>
             </DialogContent>
             </Dialog>

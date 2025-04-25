@@ -64,3 +64,4 @@ process.on('SIGINT', async () => {
 // - Meh. Consider Nixing the Sentiment thing.
 // - Accurately track new entry progress
 // - Search by tags
+// - Pormpt card and prompt need help

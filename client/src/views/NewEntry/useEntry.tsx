@@ -61,7 +61,7 @@ export function useEntry() {
       if (!res.ok) throw new Error(`Status ${res.status}`);
       const data = await res.json();
       setPrompts(data.prompts);
-      toast({ title: "Generated Prompts 📝", description: `Prompts ready.` });
+      toast({ title: "Prompt Generation Complete ✏️" });
     } catch (error: any) {
       toast({ variant: "destructive", title: "Error", description: error.message });
     } finally {
