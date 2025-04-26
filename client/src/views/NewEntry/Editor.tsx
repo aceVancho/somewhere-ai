@@ -15,6 +15,7 @@ import { CodeNode } from "@lexical/code";
 import { LinkNode } from "@lexical/link";
 import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
 import { $getRoot, ParagraphNode } from "lexical";
+import { EntryFormState } from "./useEntry";
 
 const editorConfig = {
   namespace: "JournalEditor",
@@ -51,14 +52,9 @@ const editorConfig = {
   ],
 };
 
-interface EditorProps {
-  setText: (v: string) => void;
-  handleGetPrompts: () => void;
-  promptsLoading: boolean;
-  prompts: string[];
-  setPrompt: (v: string) => void;
-  isEditing: boolean;
-}
+interface EditorProps extends Pick<EntryFormState, 
+  "setText" | "handleGetPrompts" | "promptsLoading" | "prompts" | "setPrompt" | "isEditing"
+> {}
 
 export default function Editor(props: EditorProps) {
   return (
@@ -78,19 +74,16 @@ export default function Editor(props: EditorProps) {
         <OnChangePlugin
           onChange={(editorState) => {
             editorState.read(() => {
-              const text = $getRoot().getTextContent();
-              props.setText(text);
+            //   const text = $getRoot().getTextContent();
+            //   props.setText(text);
+            const editorStateJSON = editorState.toJSON();
+            console.log('What we got here??', editorStateJSON);
+            props.setText(editorStateJSON);
             });
           }}
         />
         <MarkdownShortcutPlugin />
-        <ToolbarPlugin
-          handleGetPrompts={props.handleGetPrompts}
-          promptsLoading={props.promptsLoading}
-          prompts={props.prompts}
-          setPrompt={props.setPrompt}
-          isEditing={props.isEditing}
-        />
+        <ToolbarPlugin {...props} />
         <HistoryPlugin />
         <AutoFocusPlugin />
         <TabIndentationPlugin />

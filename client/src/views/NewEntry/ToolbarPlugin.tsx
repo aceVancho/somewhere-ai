@@ -6,14 +6,12 @@ import {
   TextFormatType,
   ElementFormatType,
 } from "lexical";
-import { $getNearestNodeOfType, $findMatchingParent } from "@lexical/utils";
+import { $findMatchingParent } from "@lexical/utils";
 import {
   INSERT_UNORDERED_LIST_COMMAND,
   INSERT_ORDERED_LIST_COMMAND,
   REMOVE_LIST_COMMAND,
-  ListNode,
   ListNodeTagType,
-  $isListItemNode,
   $isListNode,
 } from "@lexical/list";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
@@ -31,8 +29,6 @@ import {
   AlignCenter,
   List,
   ListOrdered,
-  EllipsisVertical,
-  Menu,
   Strikethrough,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -44,29 +40,20 @@ import {
 } from "@/components/ui/tooltip";
 import GeneratePromptsBtn from "./GeneratePromptsBtn";
 import { Separator } from "@radix-ui/react-separator";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { EntryFormState } from "./useEntry";
 
-interface NewEntryFormBtnBarProps {
-  handleGetPrompts: () => void;
-  promptsLoading: boolean;
-  prompts: string[];
-  setPrompt: (v: string) => void;
-  isEditing: boolean;
-}
+interface NewEntryFormBtnBarProps extends Pick<EntryFormState, 
+  "handleGetPrompts" | "promptsLoading" | "prompts" | "setPrompt" | "isEditing"
+> {}
 
 export default function ToolbarPlugin(props: NewEntryFormBtnBarProps) {
   const [editor] = useLexicalComposerContext();
@@ -278,12 +265,7 @@ export default function ToolbarPlugin(props: NewEntryFormBtnBarProps) {
             <TooltipContent side="top">Use Microphone</TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        <GeneratePromptsBtn
-          handleGetPrompts={props.handleGetPrompts}
-          promptsLoading={props.promptsLoading}
-          prompts={props.prompts}
-          setPrompt={props.setPrompt}
-        />
+        <GeneratePromptsBtn {...props} />
       </div>
 
       <Separator orientation="vertical" className="h-5 w-px bg-border mx-2" />

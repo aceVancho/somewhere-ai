@@ -3,21 +3,36 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/authContext";
 import { io, Socket } from "socket.io-client";
+import { SerializedEditorState, SerializedLexicalNode } from "lexical";
+
+export interface EntryFormState {
+  title: string;
+  text: SerializedEditorState<SerializedLexicalNode> | '';
+  prompt: string;
+  prompts: string[];
+  promptsLoading: boolean;
+  isEditing: boolean;
+  setTitle: (v: string) => void;
+  setText: (v: SerializedEditorState<SerializedLexicalNode>) => void;
+  setPrompt: (v: string) => void;
+  handleGetPrompts: () => void;
+  handleEntrySubmit: (e: React.FormEvent) => void;
+}
 
 export function useEntry() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
   const [searchParams] = useSearchParams();
-
+  
+  const [text, setText] = useState<SerializedEditorState<SerializedLexicalNode> | ''>('');
   const [title, setTitle] = useState("");
-  const [text, setText] = useState("");
-  const [entryIdToEdit, setEntryIdToEdit] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [prompt, setPrompt] = useState("");
   const [prompts, setPrompts] = useState<string[]>([]);
-  const [prompt, setPrompt] = useState<string>("");
-  const [promptsLoading, setPromptsLoading] = useState<boolean>(false);
+  const [promptsLoading, setPromptsLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [entryIdToEdit, setEntryIdToEdit] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const socketRef = useRef<Socket | null>(null);
 
@@ -112,7 +127,7 @@ export function useEntry() {
 
       toast({ title: isEditing ? "Entry updated" : "Entry created" });
       setTitle("");
-      setText("");
+      setText('');
       navigate("/all-entries");
     } catch (err: any) {
       toast({ variant: "destructive", title: "Error", description: err.message });
