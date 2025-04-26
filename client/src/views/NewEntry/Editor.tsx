@@ -27,15 +27,15 @@ const editorConfig = {
       strikethrough: "strikethrough",
     },
     list: {
-        nested: {
-          listitem: 'editor-nested-listitem',
-        },
-        ol: 'editor-list-ol',
-        ul: 'editor-list-ul',
-        listitem: 'editor-listItem',
-        listitemChecked: 'editor-listItemChecked',
-        listitemUnchecked: 'editor-listItemUnchecked',
+      nested: {
+        listitem: "editor-nested-listitem",
       },
+      ol: "editor-list-ol",
+      ul: "editor-list-ul",
+      listitem: "editor-listItem",
+      listitemChecked: "editor-listItemChecked",
+      listitemUnchecked: "editor-listItemUnchecked",
+    },
   },
   onError(error: Error) {
     throw error;
@@ -52,9 +52,17 @@ const editorConfig = {
   ],
 };
 
-interface EditorProps extends Pick<EntryFormState, 
-  "setText" | "handleGetPrompts" | "promptsLoading" | "prompts" | "setPrompt" | "isEditing"
-> {}
+interface EditorProps
+  extends Pick<
+    EntryFormState,
+    | "setText"
+    | "handleGetPrompts"
+    | "promptsLoading"
+    | "prompts"
+    | "setPrompt"
+    | "isEditing"
+    | "setEditorStateJSON"
+  > {}
 
 export default function Editor(props: EditorProps) {
   return (
@@ -74,11 +82,10 @@ export default function Editor(props: EditorProps) {
         <OnChangePlugin
           onChange={(editorState) => {
             editorState.read(() => {
-            //   const text = $getRoot().getTextContent();
-            //   props.setText(text);
-            const editorStateJSON = editorState.toJSON();
-            console.log('What we got here??', editorStateJSON);
-            props.setText(editorStateJSON);
+              const text = $getRoot().getTextContent();
+              const editorStateJSON = editorState.toJSON();
+              props.setEditorStateJSON(editorStateJSON);
+              props.setText(text);
             });
           }}
         />

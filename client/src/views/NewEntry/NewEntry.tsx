@@ -3,8 +3,8 @@ import { EntryForm } from "./EntryForm";
 
 export default function NewEntry() {
   const {
-    state: { title, text, loading, prompts, prompt, promptsLoading, isEditing },
-    actions: { setTitle, setText, setPrompt, handleGetPrompts, handleEntrySubmit },
+    state: { title, text, editorStateJSON, loading, prompts, prompt, promptsLoading, isEditing },
+    actions: { setTitle, setText, setEditorStateJSON, setPrompt, handleGetPrompts, handleEntrySubmit },
   } = useEntry();
 
   if (loading) {
@@ -29,12 +29,14 @@ export default function NewEntry() {
       <EntryForm
         title={title}
         text={text}
+        editorStateJSON={editorStateJSON}
         prompt={prompt}
         isEditing={isEditing}
         prompts={prompts}
         promptsLoading={promptsLoading}
         setTitle={setTitle}
         setText={setText}
+        setEditorStateJSON={setEditorStateJSON}
         setPrompt={setPrompt}
         handleGetPrompts={handleGetPrompts}
         handleEntrySubmit={handleEntrySubmit}

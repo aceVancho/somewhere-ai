@@ -7,13 +7,15 @@ import { SerializedEditorState, SerializedLexicalNode } from "lexical";
 
 export interface EntryFormState {
   title: string;
-  text: SerializedEditorState<SerializedLexicalNode> | '';
+  text: string;
+  editorStateJSON: SerializedEditorState<SerializedLexicalNode> | '';
   prompt: string;
   prompts: string[];
   promptsLoading: boolean;
   isEditing: boolean;
   setTitle: (v: string) => void;
-  setText: (v: SerializedEditorState<SerializedLexicalNode>) => void;
+  setText: (v: string) => void;
+  setEditorStateJSON: (v: SerializedEditorState<SerializedLexicalNode>) => void;
   setPrompt: (v: string) => void;
   handleGetPrompts: () => void;
   handleEntrySubmit: (e: React.FormEvent) => void;
@@ -24,8 +26,8 @@ export function useEntry() {
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
   const [searchParams] = useSearchParams();
-  
-  const [text, setText] = useState<SerializedEditorState<SerializedLexicalNode> | ''>('');
+  const [text, setText] = useState('');
+  const [editorStateJSON, setEditorStateJSON] = useState<SerializedEditorState<SerializedLexicalNode> | ''>('');
   const [title, setTitle] = useState("");
   const [prompt, setPrompt] = useState("");
   const [prompts, setPrompts] = useState<string[]>([]);
@@ -138,10 +140,10 @@ export function useEntry() {
 
   return {
     state: {
-      title, text, loading, prompts, prompt, promptsLoading, isEditing
+      title, text, editorStateJSON, loading, prompts, prompt, promptsLoading, isEditing
     },
     actions: {
-      setTitle, setText, setPrompt, handleGetPrompts, handleEntrySubmit
+      setTitle, setText, setEditorStateJSON, setPrompt, handleGetPrompts, handleEntrySubmit
     }
   }
 }

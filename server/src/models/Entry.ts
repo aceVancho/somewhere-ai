@@ -3,6 +3,7 @@ import mongoose, { Schema } from 'mongoose';
 const EntrySchema: Schema = new Schema({
   title: { type: String, default: '' },
   text: { type: String, required: true },
+  editorStateJSON: { type: Object, default: {} },
   tags: { type: [String], default: [] },
   analysis: { type: String, default: '' },
   sentiment: { type: Number, default: 0 },
