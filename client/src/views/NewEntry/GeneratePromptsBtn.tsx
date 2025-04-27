@@ -31,7 +31,6 @@ interface IGeneratePromptsBtnProps {
 }
 
 export default function GeneratePromptsBtn({ handleGetPrompts, promptsLoading, prompts, setPrompt }: IGeneratePromptsBtnProps) {
-    useEffect(() => { console.log({ promptsLoading})    }, [promptsLoading])
     return (
             <Dialog>
             <TooltipProvider>

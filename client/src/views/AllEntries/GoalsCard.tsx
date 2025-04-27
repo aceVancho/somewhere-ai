@@ -18,8 +18,8 @@ const GoalsCard: React.FC<GoalsCardProps> = ({ entry }) => (
       {entry.goals.map((g, index) => {
         const goalId = `${entry._id}-goal-${index}`;
         return (
-          <li className="list-disc [&>li]:mt-2 m-1">
-            <div key={goalId} className="flex items-center justify-between space-x-2 my-1 leading-7">
+          <li key={goalId} className="list-disc [&>li]:mt-2 m-1">
+            <div className="flex items-center justify-between space-x-2 my-1 leading-7">
               <p className="leading-7">
                 <Label htmlFor={goalId}>{g}</Label>
               </p>
