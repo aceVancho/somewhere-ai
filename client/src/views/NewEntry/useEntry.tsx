@@ -4,11 +4,12 @@ import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/authContext";
 import { io, Socket } from "socket.io-client";
 import { SerializedEditorState, SerializedLexicalNode } from "lexical";
+import { set } from "react-hook-form";
 
 export interface EntryFormState {
   title: string;
   text: string;
-  editorStateJSON: SerializedEditorState<SerializedLexicalNode> | '';
+  editorStateJSON: SerializedEditorState<SerializedLexicalNode> | "";
   prompt: string;
   prompts: string[];
   promptsLoading: boolean;
@@ -26,8 +27,10 @@ export function useEntry() {
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
   const [searchParams] = useSearchParams();
-  const [text, setText] = useState('');
-  const [editorStateJSON, setEditorStateJSON] = useState<SerializedEditorState<SerializedLexicalNode> | ''>('');
+  const [text, setText] = useState("");
+  const [editorStateJSON, setEditorStateJSON] = useState<
+    SerializedEditorState<SerializedLexicalNode> | ""
+  >("");
   const [title, setTitle] = useState("");
   const [prompt, setPrompt] = useState("");
   const [prompts, setPrompts] = useState<string[]>([]);
@@ -56,9 +59,12 @@ export function useEntry() {
           Authorization: `Bearer ${localStorage.getItem("somewhereAIToken")}`,
         },
       });
+
       const data = await res.json();
-      setTitle(data.title);
-      setText(data.text);
+      const { title, text, editorStateJSON } = data;
+      setTitle(title);
+      setText(text);
+      setEditorStateJSON(editorStateJSON);
       setEntryIdToEdit(entryId);
     } catch (err) {
       console.error("Failed to fetch entry", err);
@@ -68,19 +74,26 @@ export function useEntry() {
   async function handleGetPrompts() {
     setPromptsLoading(true);
     try {
-      const res = await fetch(`http://localhost:4001/api/entries/prompts/${user?._id}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("somewhereAIToken")}`,
-        },
-      });
+      const res = await fetch(
+        `http://localhost:4001/api/entries/prompts/${user?._id}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("somewhereAIToken")}`,
+          },
+        }
+      );
 
       if (!res.ok) throw new Error(`Status ${res.status}`);
       const data = await res.json();
       setPrompts(data.prompts);
       toast({ title: "Prompt Generation Complete ✏️" });
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Error", description: error.message });
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message,
+      });
     } finally {
       setPromptsLoading(false);
     }
@@ -122,17 +135,21 @@ export function useEntry() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("somewhereAIToken")}`,
         },
-        body: JSON.stringify({ title, text }),
+        body: JSON.stringify({ title, text, editorStateJSON }),
       });
 
       if (!res.ok) throw new Error("Failed to save entry");
 
       toast({ title: isEditing ? "Entry updated" : "Entry created" });
       setTitle("");
-      setText('');
+      setText("");
       navigate("/all-entries");
     } catch (err: any) {
-      toast({ variant: "destructive", title: "Error", description: err.message });
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: err.message,
+      });
     } finally {
       setLoading(false);
     }
@@ -140,10 +157,22 @@ export function useEntry() {
 
   return {
     state: {
-      title, text, editorStateJSON, loading, prompts, prompt, promptsLoading, isEditing
+      title,
+      text,
+      editorStateJSON,
+      loading,
+      prompts,
+      prompt,
+      promptsLoading,
+      isEditing,
     },
     actions: {
-      setTitle, setText, setEditorStateJSON, setPrompt, handleGetPrompts, handleEntrySubmit
-    }
-  }
+      setTitle,
+      setText,
+      setEditorStateJSON,
+      setPrompt,
+      handleGetPrompts,
+      handleEntrySubmit,
+    },
+  };
 }
