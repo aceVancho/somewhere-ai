@@ -1,4 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
+import { IEntry } from "../types/types"
 
 const EntrySchema: Schema = new Schema({
   title: { type: String, default: '' },

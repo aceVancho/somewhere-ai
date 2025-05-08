@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { EntryProvider } from './contexts/entryContext';
 import AllEntries from './views/AllEntries/AllEntries';
 import NewEntry from './views/NewEntry/NewEntry';
+import BulkUpload from './views/BulkUpload/BulkUpload';
 import Profile from './views/Profile/Profile';
 import { Login } from './views/Login/Login';
 import Layout from './components/Layout';
@@ -39,6 +40,7 @@ const App: React.FC = () => {
                 <Route path="/login" element={<Login />} />
                 <Route path="/all-entries" element={<ProtectedRoute><AllEntries /></ProtectedRoute>} />
                 <Route path="/new-entry" element={<ProtectedRoute><NewEntry /></ProtectedRoute>} />
+                <Route path="/bulk-upload" element={<ProtectedRoute><BulkUpload /></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               </Route>
               <Route path="/reset-token" element={<ResetToken />} />

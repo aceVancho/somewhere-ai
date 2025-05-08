@@ -12,6 +12,7 @@ import {
   Plus,
   Store,
   Menu,
+  Upload
 } from "lucide-react";
 import { ChatBubbleIcon } from "@radix-ui/react-icons";
 import {
@@ -49,6 +50,17 @@ const MobileEntriesGroup = () => {
           <Plus className="mr-2 h-4 w-4" />
           New Entry
         </div>
+      </SheetClose>
+      <SheetClose className="hover:bg-secondary hover:text-foreground">
+      <div className="hover:bg-secondary hover:text-foreground">
+        <div
+          className="flex items-center gap-4 m-2 text-sm"
+          onClick={() => navigate("bulk-upload")}
+        >
+          <Upload className="mr-2 h-4 w-4" />
+          Bulk Upload
+        </div>
+      </div>
       </SheetClose>
     </div>
   );
@@ -155,6 +167,15 @@ const DesktopEntriesGroup = () => {
         >
           <Plus className="mr-2 h-4 w-4" />
           New Entry
+        </div>
+      </div>
+      <div className="hover:bg-secondary hover:text-foreground">
+        <div
+          className="flex items-center gap-4 m-2 text-sm"
+          onClick={() => navigate("bulk-upload")}
+        >
+          <Upload className="mr-2 h-4 w-4" />
+          Bulk Upload
         </div>
       </div>
     </div>
